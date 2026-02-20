@@ -153,7 +153,7 @@ export default async function ReportsPage({
   return (
     <div className="max-w-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Отчёты</h1>
 
         <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
@@ -258,11 +258,11 @@ export default async function ReportsPage({
             return (
               <div key={key}>
                 {/* Day header */}
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <span className="text-sm font-semibold text-gray-700 capitalize">
+                <div className="flex items-center gap-2 mb-2 px-1">
+                  <span className="text-sm font-semibold text-gray-700 capitalize truncate flex-1 min-w-0">
                     {dayLabel}
                   </span>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     <CopyDayButton
                       dayLabel={dayLabel}
                       totalFormatted={totalFormatted}
@@ -291,25 +291,27 @@ export default async function ReportsPage({
                       : task.completed
 
                     return (
-                      <div key={taskId} className="px-4 py-3 flex items-center justify-between">
+                      <div key={taskId} className="px-4 py-3">
+                        {/* Title row */}
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="text-base leading-none flex-shrink-0">
                             {isDone ? "✅" : "❌"}
                           </span>
-                          <span className="text-sm text-gray-800 truncate">
+                          <span className="text-sm text-gray-800 truncate flex-1 min-w-0">
                             {task.taskTitle}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                          {estimated !== null && (
-                            <span className={`text-xs font-mono ${indicatorColor}`}>
-                              {formatDuration(totalTracked)} / {formatDuration(estimated)}
-                            </span>
-                          )}
-                          <span className="text-sm font-mono text-gray-600 tabular-nums">
+                          <span className="text-sm font-mono text-gray-600 tabular-nums flex-shrink-0">
                             {formatDuration(task.duration)}
                           </span>
                         </div>
+                        {/* Estimate indicator row */}
+                        {estimated !== null && (
+                          <div className="mt-1 pl-7">
+                            <span className={`text-xs font-mono ${indicatorColor}`}>
+                              {formatDuration(totalTracked)} / {formatDuration(estimated)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )
                   })}

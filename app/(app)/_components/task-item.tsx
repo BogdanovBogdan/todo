@@ -118,58 +118,74 @@ export function TaskItem({ task }: { task: Task }) {
 
   return (
     <div
-      className={`group flex items-center gap-3 py-2.5 border-b border-gray-100 last:border-0 transition-opacity ${
+      className={`group border-b border-gray-100 last:border-0 transition-opacity ${
         isPending ? "opacity-40" : ""
       }`}
     >
-      {/* Checkbox */}
-      <button
-        onClick={() => startTransition(() => toggleTask(task.id))}
-        aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
-        className={`w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
-          task.completed
-            ? "bg-gray-300 border-gray-300"
-            : "border-gray-300 hover:border-red-400"
-        }`}
-      />
+      {/* Title row */}
+      <div className="flex items-center gap-3 py-2.5">
+        {/* Checkbox */}
+        <button
+          onClick={() => startTransition(() => toggleTask(task.id))}
+          aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
+          className={`w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
+            task.completed
+              ? "bg-gray-300 border-gray-300"
+              : "border-gray-300 hover:border-red-400"
+          }`}
+        />
 
-      {/* Title */}
-      <span
-        className={`flex-1 text-sm ${
-          task.completed ? "line-through text-gray-400" : "text-gray-800"
-        }`}
-      >
-        {task.title}
-      </span>
+        {/* Title */}
+        <span
+          className={`flex-1 min-w-0 text-sm ${
+            task.completed ? "line-through text-gray-400" : "text-gray-800"
+          }`}
+        >
+          {task.title}
+        </span>
 
-      {/* Estimate picker */}
-      <div
-        className="opacity-0 group-hover:opacity-100 transition-opacity data-[has-estimate=true]:opacity-100"
-        data-has-estimate={!!task.estimatedDuration}
-      >
+        {/* Desktop-only inline controls */}
+        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+          <div
+            className="opacity-0 group-hover:opacity-100 transition-opacity data-[has-estimate=true]:opacity-100"
+            data-has-estimate={!!task.estimatedDuration}
+          >
+            <EstimatePicker taskId={task.id} estimatedDuration={task.estimatedDuration} />
+          </div>
+          <div
+            className="opacity-0 group-hover:opacity-100 transition-opacity data-[has-date=true]:opacity-100"
+            data-has-date={!!task.dueDate}
+          >
+            <DatePicker value={task.dueDate} onChange={handleDateChange} />
+          </div>
+          <TimerButton taskId={task.id} taskTitle={task.title} type="stopwatch" />
+          <TimerButton taskId={task.id} taskTitle={task.title} type="pomodoro" />
+          <button
+            onClick={() => startTransition(() => deleteTask(task.id))}
+            aria-label="Delete task"
+            className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-xl leading-none transition-opacity"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Mobile delete */}
+        <button
+          onClick={() => startTransition(() => deleteTask(task.id))}
+          aria-label="Delete task"
+          className="md:hidden text-gray-300 hover:text-red-400 text-xl leading-none flex-shrink-0 transition-colors"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Mobile controls row */}
+      <div className="flex md:hidden items-center gap-2 pb-2.5 pl-[30px] flex-wrap">
         <EstimatePicker taskId={task.id} estimatedDuration={task.estimatedDuration} />
-      </div>
-
-      {/* Due date picker */}
-      <div
-        className="opacity-0 group-hover:opacity-100 transition-opacity data-[has-date=true]:opacity-100"
-        data-has-date={!!task.dueDate}
-      >
         <DatePicker value={task.dueDate} onChange={handleDateChange} />
+        <TimerButton taskId={task.id} taskTitle={task.title} type="stopwatch" />
+        <TimerButton taskId={task.id} taskTitle={task.title} type="pomodoro" />
       </div>
-
-      {/* Timer buttons */}
-      <TimerButton taskId={task.id} taskTitle={task.title} type="stopwatch" />
-      <TimerButton taskId={task.id} taskTitle={task.title} type="pomodoro" />
-
-      {/* Delete */}
-      <button
-        onClick={() => startTransition(() => deleteTask(task.id))}
-        aria-label="Delete task"
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 text-xl leading-none transition-opacity"
-      >
-        ×
-      </button>
     </div>
   )
 }

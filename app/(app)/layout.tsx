@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { BottomNav } from "./_components/bottom-nav"
 import { TimerBar } from "./_components/timer/timer-bar"
 import { TimerProvider } from "./_components/timer/timer-context"
 
@@ -14,8 +15,8 @@ export default async function AppLayout({
   return (
     <TimerProvider>
       <div className="flex min-h-screen bg-gray-50">
-        {/* Sidebar */}
-        <aside className="w-56 border-r border-gray-200 bg-white px-3 py-6 flex-shrink-0">
+        {/* Sidebar — desktop only */}
+        <aside className="hidden md:flex md:flex-col w-56 border-r border-gray-200 bg-white px-3 py-6 flex-shrink-0">
           <div className="mb-6 px-3">
             <span className="text-sm font-semibold text-gray-900">
               {session.user.name}
@@ -49,11 +50,12 @@ export default async function AppLayout({
           </nav>
         </aside>
 
-        {/* Main content — pb-20 to clear the fixed timer bar */}
-        <main className="flex-1 p-8 pb-20">{children}</main>
+        {/* Main content */}
+        <main className="flex-1 p-4 md:p-8 pb-36 md:pb-20">{children}</main>
       </div>
 
       <TimerBar />
+      <BottomNav />
     </TimerProvider>
   )
 }

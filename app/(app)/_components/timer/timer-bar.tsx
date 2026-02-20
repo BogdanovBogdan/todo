@@ -14,7 +14,7 @@ export function TimerBar() {
     : 0
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-50">
+    <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-50">
       {/* Progress bar (pomodoro only) */}
       {isPomodoro && (
         <div className="h-0.5 bg-gray-100">
@@ -25,7 +25,7 @@ export function TimerBar() {
         </div>
       )}
 
-      <div className="flex items-center justify-between px-6 h-14 max-w-5xl mx-auto w-full">
+      <div className="flex items-center justify-between px-3 md:px-6 h-14 max-w-5xl mx-auto w-full">
         {/* Task info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-base">{isPomodoro ? "🍅" : "⏱"}</span>
@@ -36,7 +36,7 @@ export function TimerBar() {
 
         {/* Timer display */}
         <span
-          className={`text-2xl font-mono font-semibold tabular-nums mx-8 ${
+          className={`text-xl md:text-2xl font-mono font-semibold tabular-nums mx-3 md:mx-8 ${
             isRunning ? "text-gray-900" : "text-gray-400"
           }`}
         >
@@ -45,8 +45,8 @@ export function TimerBar() {
 
         {/* Controls */}
         <div className="flex items-center gap-2 flex-1 justify-end">
-          {/* Mode switcher — disabled while running */}
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs mr-1">
+          {/* Mode switcher — desktop only */}
+          <div className="hidden md:flex rounded-lg border border-gray-200 overflow-hidden text-xs mr-1">
             <button
               onClick={() => setType("pomodoro")}
               disabled={isRunning}
