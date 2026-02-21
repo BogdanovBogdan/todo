@@ -3,6 +3,21 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { timeLogs } from "@/db/schema"
+import { and, eq } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
+
+export async function updateTimeLog(id: string, duration: number) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+  if (duration < 1) return
+
+  await db
+    .update(timeLogs)
+    .set({ duration })
+    .where(and(eq(timeLogs.id, id), eq(timeLogs.userId, session.user.id)))
+
+  revalidatePath("/", "layout")
+}
 
 export async function saveTimeLog(data: {
   taskId: string

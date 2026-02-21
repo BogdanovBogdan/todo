@@ -183,8 +183,8 @@ export function TaskItem({ task }: { task: Task }) {
       <div className="flex md:hidden items-center gap-2 pb-2.5 pl-[30px] flex-wrap">
         <EstimatePicker taskId={task.id} estimatedDuration={task.estimatedDuration} />
         <DatePicker value={task.dueDate} onChange={handleDateChange} />
-        <TimerButton taskId={task.id} taskTitle={task.title} type="stopwatch" />
-        <TimerButton taskId={task.id} taskTitle={task.title} type="pomodoro" />
+        <TimerButton taskId={task.id} taskTitle={task.title} type="stopwatch" alwaysVisible />
+        <TimerButton taskId={task.id} taskTitle={task.title} type="pomodoro" alwaysVisible />
       </div>
     </div>
   )

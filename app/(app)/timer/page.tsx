@@ -5,6 +5,7 @@ import { addSeconds, format, isToday, isYesterday, startOfWeek } from "date-fns"
 import { ru } from "date-fns/locale"
 import { desc, eq } from "drizzle-orm"
 import Link from "next/link"
+import { EditableDuration } from "./_components/editable-duration"
 import { LogActions } from "./_components/log-actions"
 
 const DAYS_PER_PAGE = 3
@@ -149,9 +150,7 @@ export default async function TimerPage({
                     {formatTimeRange(log.startTime, log.duration)}
                   </span>
 
-                  <span className="text-sm font-mono text-gray-600 flex-shrink-0 w-16 text-right tabular-nums">
-                    {formatDuration(log.duration)}
-                  </span>
+                  <EditableDuration logId={log.id} initialDuration={log.duration} />
                 </div>
               ))}
             </div>

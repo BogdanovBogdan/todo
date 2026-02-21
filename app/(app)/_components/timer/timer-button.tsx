@@ -6,9 +6,10 @@ interface Props {
   taskId: string
   taskTitle: string
   type: TimerType
+  alwaysVisible?: boolean
 }
 
-export function TimerButton({ taskId, taskTitle, type }: Props) {
+export function TimerButton({ taskId, taskTitle, type, alwaysVisible = false }: Props) {
   const { state, start } = useTimer()
 
   const isActive =
@@ -23,6 +24,8 @@ export function TimerButton({ taskId, taskTitle, type }: Props) {
       className={`flex-shrink-0 text-sm transition-opacity ${
         isActive
           ? "opacity-100 text-red-500"
+          : alwaysVisible
+          ? "opacity-100 text-gray-400 hover:text-red-400"
           : "opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400"
       }`}
     >
