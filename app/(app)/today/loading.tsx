@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full min-w-0">
       <div className="h-8 w-20 bg-gray-100 rounded-lg mb-6 animate-pulse" />
       <div className="space-y-0">
         {Array.from({ length: 4 }).map((_, i) => (

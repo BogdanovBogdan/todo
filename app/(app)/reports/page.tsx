@@ -151,7 +151,7 @@ export default async function ReportsPage({
     .sort((a, b) => b.date.getTime() - a.date.getTime())
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full min-w-0">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Отчёты</h1>

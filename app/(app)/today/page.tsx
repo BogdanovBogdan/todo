@@ -36,7 +36,7 @@ export default async function TodayPage({
   const completedCount = allTasks.filter((t) => t.completed).length
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full min-w-0">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Today</h1>
         {completedCount > 0 && (

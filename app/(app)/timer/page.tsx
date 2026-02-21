@@ -84,7 +84,7 @@ export default async function TimerPage({
     .reduce((sum, l) => sum + l.duration, 0)
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl w-full min-w-0">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Таймер</h1>
 
       {/* Stats */}
@@ -133,19 +133,19 @@ export default async function TimerPage({
               {dayLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="group flex items-center gap-3 px-4 py-3"
+                  className="group flex items-center gap-3 px-4 py-3 min-w-0"
                 >
                   <span className="text-sm flex-shrink-0">
                     {log.type === "pomodoro" ? "🍅" : "⏱"}
                   </span>
 
-                  <span className="flex-1 text-sm text-gray-800 truncate">
+                  <span className="flex-1 min-w-0 text-sm text-gray-800 truncate">
                     {log.taskTitle}
                   </span>
 
                   <LogActions taskId={log.taskId} taskTitle={log.taskTitle} />
 
-                  <span className="text-xs text-gray-400 flex-shrink-0 tabular-nums">
+                  <span className="hidden md:block text-xs text-gray-400 flex-shrink-0 tabular-nums">
                     {formatTimeRange(log.startTime, log.duration)}
                   </span>
 

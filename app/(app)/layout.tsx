@@ -52,7 +52,7 @@ export default async function AppLayout({
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-4 md:p-8 pb-36 md:pb-20">{children}</main>
+        <main className="flex-1 min-w-0 p-4 md:p-8 pb-36 md:pb-20 overflow-x-hidden">{children}</main>
       </div>
 
       <TimerBar />
