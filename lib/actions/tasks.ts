@@ -7,6 +7,10 @@ import { and, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { parseEstimate } from "@/lib/utils/time"
 
+function revalidateTasks() {
+  revalidatePath("/", "layout")
+}
+
 export async function createTask(formData: FormData) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -24,31 +28,23 @@ export async function createTask(formData: FormData) {
     estimatedDuration: estimateStr ? parseEstimate(estimateStr) : null,
   })
 
-  revalidatePath("/inbox")
-  revalidatePath("/today")
+  revalidateTasks()
 }
 
-export async function toggleTask(id: string) {
+export async function toggleTask(id: string, completed: boolean) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
-
-  const task = await db.query.tasks.findFirst({
-    where: and(eq(tasks.id, id), eq(tasks.userId, session.user.id)),
-  })
-
-  if (!task) return
 
   await db
     .update(tasks)
     .set({
-      completed: !task.completed,
-      completedAt: !task.completed ? new Date() : null,
+      completed,
+      completedAt: completed ? new Date() : null,
       updatedAt: new Date(),
     })
-    .where(eq(tasks.id, id))
+    .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 
-  revalidatePath("/inbox")
-  revalidatePath("/today")
+  revalidateTasks()
 }
 
 export async function updateTaskDueDate(id: string, dueDate: Date | null) {
@@ -60,8 +56,7 @@ export async function updateTaskDueDate(id: string, dueDate: Date | null) {
     .set({ dueDate, updatedAt: new Date() })
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 
-  revalidatePath("/inbox")
-  revalidatePath("/today")
+  revalidateTasks()
 }
 
 export async function updateTaskEstimate(id: string, estimatedDuration: number | null) {
@@ -73,8 +68,7 @@ export async function updateTaskEstimate(id: string, estimatedDuration: number |
     .set({ estimatedDuration, updatedAt: new Date() })
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 
-  revalidatePath("/inbox")
-  revalidatePath("/today")
+  revalidateTasks()
 }
 
 export async function deleteTask(id: string) {
@@ -85,6 +79,5 @@ export async function deleteTask(id: string) {
     .delete(tasks)
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 
-  revalidatePath("/inbox")
-  revalidatePath("/today")
+  revalidateTasks()
 }

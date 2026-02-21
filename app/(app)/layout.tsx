@@ -1,4 +1,5 @@
 import { auth } from "@/auth"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { BottomNav } from "./_components/bottom-nav"
 import { TimerBar } from "./_components/timer/timer-bar"
@@ -23,30 +24,30 @@ export default async function AppLayout({
             </span>
           </div>
           <nav className="space-y-1">
-            <a
+            <Link
               href="/inbox"
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               <span>📥</span> Inbox
-            </a>
-            <a
+            </Link>
+            <Link
               href="/today"
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               <span>📅</span> Today
-            </a>
-            <a
+            </Link>
+            <Link
               href="/timer"
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               <span>⏱</span> Таймер
-            </a>
-            <a
+            </Link>
+            <Link
               href="/reports"
               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
               <span>📊</span> Отчёты
-            </a>
+            </Link>
           </nav>
         </aside>
 

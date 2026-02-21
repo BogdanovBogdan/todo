@@ -126,7 +126,7 @@ export function TaskItem({ task }: { task: Task }) {
       <div className="flex items-center gap-3 py-2.5">
         {/* Checkbox */}
         <button
-          onClick={() => startTransition(() => toggleTask(task.id))}
+          onClick={() => startTransition(() => toggleTask(task.id, !task.completed))}
           aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
           className={`w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
             task.completed
