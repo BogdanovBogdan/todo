@@ -10,7 +10,7 @@ import {
   useRef,
 } from "react"
 
-export const WORK_DURATION = 25 * 60 // 25 min
+export const WORK_DURATION = 25 * 60
 
 export type TimerStatus = "idle" | "running" | "paused"
 export type TimerType = "pomodoro" | "stopwatch"
@@ -20,12 +20,15 @@ export interface TimerState {
   type: TimerType
   taskId: string | null
   taskTitle: string | null
+  // startTime is adjusted on resume so that (Date.now() - startTime)
+  // always equals total ACTIVE elapsed time
   startTime: Date | null
+  pausedAt: Date | null
   seconds: number
   workDuration: number
 }
 
-// ─── localStorage persistence ─────────────────────────────────────────────────
+// ─── localStorage ─────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "todo_timer_session"
 
@@ -33,45 +36,42 @@ interface PersistedTimer {
   taskId: string
   taskTitle: string
   type: TimerType
-  startTime: string // ISO
+  startTime: string   // ISO — adjusted for pauses
+  pausedAt?: string   // ISO — set when paused
   workDuration: number
+  savedAt?: number    // set on tab close so we don't restore
 }
 
-function persistTimer(data: PersistedTimer) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  } catch {}
+function persistTimer(data: Omit<PersistedTimer, "savedAt">) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch {}
 }
 
 function clearPersistedTimer() {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {}
+  try { localStorage.removeItem(STORAGE_KEY) } catch {}
 }
 
 function loadPersistedTimer(): PersistedTimer | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     return raw ? (JSON.parse(raw) as PersistedTimer) : null
-  } catch {
-    return null
-  }
+  } catch { return null }
+}
+
+function updatePersistedTimer(patch: Partial<PersistedTimer>) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...JSON.parse(raw), ...patch }))
+  } catch {}
 }
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
 
 type Action =
-  | {
-      type: "START"
-      taskId: string
-      taskTitle: string
-      timerType: TimerType
-      workDuration: number
-      startTime: Date
-    }
+  | { type: "START"; taskId: string; taskTitle: string; timerType: TimerType; workDuration: number; startTime: Date }
   | { type: "RESTORE"; state: TimerState }
-  | { type: "PAUSE" }
-  | { type: "RESUME" }
+  | { type: "PAUSE"; pausedAt: Date }
+  | { type: "RESUME"; newStartTime: Date }
   | { type: "TICK" }
   | { type: "RESET" }
   | { type: "SET_TYPE"; timerType: TimerType }
@@ -83,9 +83,17 @@ function initState(workDuration = WORK_DURATION): TimerState {
     taskId: null,
     taskTitle: null,
     startTime: null,
+    pausedAt: null,
     seconds: workDuration,
     workDuration,
   }
+}
+
+function computeSeconds(state: TimerState): number {
+  if (!state.startTime) return state.seconds
+  const elapsed = Math.floor((Date.now() - state.startTime.getTime()) / 1000)
+  if (state.type === "pomodoro") return Math.max(0, state.workDuration - elapsed)
+  return elapsed
 }
 
 function reducer(state: TimerState, action: Action): TimerState {
@@ -98,33 +106,39 @@ function reducer(state: TimerState, action: Action): TimerState {
         taskTitle: action.taskTitle,
         type: action.timerType,
         startTime: action.startTime,
-        seconds:
-          action.timerType === "pomodoro" ? action.workDuration : 0,
+        pausedAt: null,
+        seconds: action.timerType === "pomodoro" ? action.workDuration : 0,
         workDuration: action.workDuration,
       }
     case "RESTORE":
       return action.state
     case "PAUSE":
-      return { ...state, status: "paused" }
+      return { ...state, status: "paused", pausedAt: action.pausedAt }
     case "RESUME":
-      return { ...state, status: "running" }
+      return { ...state, status: "running", startTime: action.newStartTime, pausedAt: null }
     case "TICK":
-      if (state.type === "pomodoro") {
-        return { ...state, seconds: Math.max(0, state.seconds - 1) }
-      }
-      return { ...state, seconds: state.seconds + 1 }
+      if (state.status !== "running" || !state.startTime) return state
+      return { ...state, seconds: computeSeconds(state) }
     case "RESET":
       return initState(state.workDuration)
     case "SET_TYPE":
       return {
         ...state,
         type: action.timerType,
-        seconds:
-          action.timerType === "pomodoro" ? state.workDuration : 0,
+        seconds: action.timerType === "pomodoro" ? state.workDuration : 0,
       }
     default:
       return state
   }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function calcDuration(s: TimerState): number {
+  if (!s.startTime) return 0
+  const refTime = s.pausedAt ?? new Date()
+  const elapsed = Math.floor((refTime.getTime() - s.startTime.getTime()) / 1000)
+  return s.type === "pomodoro" ? Math.min(s.workDuration, elapsed) : elapsed
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -142,7 +156,6 @@ const TimerContext = createContext<TimerContextValue | null>(null)
 
 export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, initState)
-
   const stateRef = useRef(state)
   stateRef.current = state
 
@@ -151,14 +164,22 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     const persisted = loadPersistedTimer()
     if (!persisted) return
 
+    // Session was already saved on close — don't restore
+    if (persisted.savedAt) {
+      clearPersistedTimer()
+      return
+    }
+
     const startTime = new Date(persisted.startTime)
-    const elapsedSec = Math.floor((Date.now() - startTime.getTime()) / 1000)
+    const pausedAt = persisted.pausedAt ? new Date(persisted.pausedAt) : null
+    const refTime = pausedAt ?? new Date()
+    const elapsed = Math.floor((refTime.getTime() - startTime.getTime()) / 1000)
 
     if (persisted.type === "pomodoro") {
-      const remaining = persisted.workDuration - elapsedSec
+      const remaining = persisted.workDuration - elapsed
 
-      if (remaining <= 0) {
-        // Pomodoro finished while away — save the full session log
+      if (remaining <= 0 && !pausedAt) {
+        // Pomodoro finished while tab was closed/sleeping
         saveTimeLog({
           taskId: persisted.taskId,
           startTime,
@@ -172,52 +193,47 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
       dispatch({
         type: "RESTORE",
         state: {
-          status: "running",
+          status: pausedAt ? "paused" : "running",
           type: "pomodoro",
           taskId: persisted.taskId,
           taskTitle: persisted.taskTitle,
           startTime,
-          seconds: remaining,
+          pausedAt,
+          seconds: Math.max(0, remaining),
           workDuration: persisted.workDuration,
         },
       })
     } else {
-      // Stopwatch — restore with elapsed time
       dispatch({
         type: "RESTORE",
         state: {
-          status: "running",
+          status: pausedAt ? "paused" : "running",
           type: "stopwatch",
           taskId: persisted.taskId,
           taskTitle: persisted.taskTitle,
           startTime,
-          seconds: elapsedSec,
+          pausedAt,
+          seconds: elapsed,
           workDuration: persisted.workDuration,
         },
       })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Tick ────────────────────────────────────────────────────────────────────
+  // ── Tick (wall-clock based) ──────────────────────────────────────────────────
   useEffect(() => {
     if (state.status !== "running") return
     const id = setInterval(() => dispatch({ type: "TICK" }), 1000)
     return () => clearInterval(id)
   }, [state.status])
 
-  // ── Stop & save ─────────────────────────────────────────────────────────────
+  // ── Stop & save ──────────────────────────────────────────────────────────────
   const stop = useCallback(async () => {
     const s = stateRef.current
     if (s.taskId && s.startTime && s.status !== "idle") {
-      const duration =
-        s.type === "pomodoro" ? s.workDuration - s.seconds : s.seconds
+      const duration = calcDuration(s)
       if (duration >= 1) {
-        await saveTimeLog({
-          taskId: s.taskId,
-          startTime: s.startTime,
-          duration,
-          type: s.type,
-        })
+        await saveTimeLog({ taskId: s.taskId, startTime: s.startTime, duration, type: s.type })
       }
     }
     clearPersistedTimer()
@@ -226,33 +242,70 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   // ── Auto-complete pomodoro ───────────────────────────────────────────────────
   useEffect(() => {
-    if (
-      state.type === "pomodoro" &&
-      state.status === "running" &&
-      state.seconds === 0
-    ) {
+    if (state.type === "pomodoro" && state.status === "running" && state.seconds === 0) {
       stop()
     }
   }, [state.seconds, state.type, state.status, stop])
 
+  // ── Save on tab close (keepalive fetch survives page unload) ─────────────────
+  useEffect(() => {
+    function handleBeforeUnload() {
+      const s = stateRef.current
+      if (!s.taskId || !s.startTime || s.status === "idle") return
+
+      const duration = calcDuration(s)
+      if (duration < 1) return
+
+      fetch("/api/time-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskId: s.taskId,
+          startTime: s.startTime.toISOString(),
+          duration,
+          type: s.type,
+        }),
+        keepalive: true,
+      }).catch(() => {})
+
+      // Mark localStorage so we don't restore this session on next open
+      updatePersistedTimer({ savedAt: Date.now() })
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  }, [])
+
   // ── Start ────────────────────────────────────────────────────────────────────
   const start = useCallback(
     async (taskId: string, taskTitle: string, timerType: TimerType) => {
-      if (stateRef.current.status !== "idle") {
-        await stop()
-      }
+      if (stateRef.current.status !== "idle") await stop()
       const startTime = new Date()
       const { workDuration } = stateRef.current
-
       persistTimer({ taskId, taskTitle, type: timerType, startTime: startTime.toISOString(), workDuration })
-
       dispatch({ type: "START", taskId, taskTitle, timerType, workDuration, startTime })
     },
     [stop]
   )
 
-  const pause = useCallback(() => dispatch({ type: "PAUSE" }), [])
-  const resume = useCallback(() => dispatch({ type: "RESUME" }), [])
+  // ── Pause ────────────────────────────────────────────────────────────────────
+  const pause = useCallback(() => {
+    const pausedAt = new Date()
+    dispatch({ type: "PAUSE", pausedAt })
+    updatePersistedTimer({ pausedAt: pausedAt.toISOString() })
+  }, [])
+
+  // ── Resume ───────────────────────────────────────────────────────────────────
+  const resume = useCallback(() => {
+    const s = stateRef.current
+    if (!s.pausedAt || !s.startTime) return
+    // Shift startTime forward by pause duration so elapsed stays accurate
+    const pauseDuration = Date.now() - s.pausedAt.getTime()
+    const newStartTime = new Date(s.startTime.getTime() + pauseDuration)
+    dispatch({ type: "RESUME", newStartTime })
+    updatePersistedTimer({ startTime: newStartTime.toISOString(), pausedAt: undefined })
+  }, [])
+
   const setType = useCallback(
     (timerType: TimerType) => dispatch({ type: "SET_TYPE", timerType }),
     []
