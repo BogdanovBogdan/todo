@@ -78,6 +78,33 @@ export async function updateTaskEstimate(id: string, estimatedDuration: number |
   revalidateTasks()
 }
 
+export async function updateTaskTitle(id: string, title: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  const trimmed = title.trim()
+  if (!trimmed) return
+
+  await db
+    .update(tasks)
+    .set({ title: trimmed, updatedAt: new Date() })
+    .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
+
+  revalidateTasks()
+}
+
+export async function updateTaskDescription(id: string, description: string | null) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  await db
+    .update(tasks)
+    .set({ description: description?.trim() ?? null, updatedAt: new Date() })
+    .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
+
+  revalidateTasks()
+}
+
 export async function deleteTask(id: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")

@@ -3,7 +3,7 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { timeLogs } from "@/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 
 export async function updateTimeLog(id: string, duration: number) {
@@ -17,6 +17,18 @@ export async function updateTimeLog(id: string, duration: number) {
     .where(and(eq(timeLogs.id, id), eq(timeLogs.userId, session.user.id)))
 
   revalidatePath("/", "layout")
+}
+
+export async function getTaskTrackedTime(taskId: string): Promise<number> {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  const result = await db
+    .select({ total: sql<number>`coalesce(sum(${timeLogs.duration}), 0)` })
+    .from(timeLogs)
+    .where(and(eq(timeLogs.taskId, taskId), eq(timeLogs.userId, session.user.id)))
+
+  return Number(result[0]?.total ?? 0)
 }
 
 export async function saveTimeLog(data: {
