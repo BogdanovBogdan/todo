@@ -17,8 +17,8 @@ export default async function TodayPage({
   const session = await auth()
 
   const now = new Date()
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
 
   const allTasks = await db.query.tasks.findMany({
     where: and(

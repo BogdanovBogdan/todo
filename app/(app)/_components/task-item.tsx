@@ -113,7 +113,14 @@ export function TaskItem({ task }: { task: Task }) {
   const [isPending, startTransition] = useTransition()
 
   function handleDateChange(date: Date | null) {
-    startTransition(() => updateTaskDueDate(task.id, date))
+    let dateStr: string | null = null
+    if (date) {
+      const y = date.getFullYear()
+      const m = String(date.getMonth() + 1).padStart(2, "0")
+      const d = String(date.getDate()).padStart(2, "0")
+      dateStr = `${y}-${m}-${d}`
+    }
+    startTransition(() => updateTaskDueDate(task.id, dateStr))
   }
 
   return (

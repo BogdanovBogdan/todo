@@ -20,7 +20,10 @@ export function AddTaskForm() {
     const formData = new FormData(e.currentTarget)
     // Inject dueDate from state (not from hidden input)
     if (dueDate) {
-      formData.set("dueDate", dueDate.toISOString())
+      const y = dueDate.getFullYear()
+      const m = String(dueDate.getMonth() + 1).padStart(2, "0")
+      const d = String(dueDate.getDate()).padStart(2, "0")
+      formData.set("dueDate", `${y}-${m}-${d}`)
     } else {
       formData.delete("dueDate")
     }
