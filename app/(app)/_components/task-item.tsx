@@ -47,7 +47,7 @@ export function TaskItem({ task }: { task: Task }) {
               startTransition(() => toggleTask(task.id, !task.completed))
             }}
             aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
-            className={`mt-0.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
+            className={`mt-0.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors cursor-pointer ${
               task.completed
                 ? "bg-gray-300 border-gray-300"
                 : "border-gray-300 hover:border-red-400"

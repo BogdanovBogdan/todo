@@ -74,17 +74,17 @@ function EstimatePicker({
         type="button"
         onClick={() => setOpen((v) => !v)}
         disabled={isPending}
-        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors ${
+        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors cursor-pointer ${
           estimatedDuration
-            ? "border-purple-200 text-purple-600 bg-purple-50 hover:bg-purple-100"
-            : "border-gray-200 text-gray-400 hover:bg-gray-50"
+            ? "border-purple-200 text-purple-600 bg-purple-50 md:hover:bg-purple-100"
+            : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
         }`}
       >
         <span>⏳</span>
         {estimatedDuration ? (
           <span>{formatEstimate(estimatedDuration)}</span>
         ) : (
-          <span>Оценка</span>
+          <span>--:--</span>
         )}
       </button>
 
@@ -293,7 +293,7 @@ export function TaskModal({ task, onClose }: Props) {
         <button
           onClick={handleDelete}
           disabled={isPending}
-          className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
+          className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
           Удалить задачу
         </button>
@@ -385,7 +385,7 @@ export function TaskModal({ task, onClose }: Props) {
       />
 
       {/* Desktop modal */}
-      <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center p-4">
+      <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center p-4" onClick={onClose}>
         <div
           className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
@@ -394,7 +394,7 @@ export function TaskModal({ task, onClose }: Props) {
           <div className="flex items-center justify-end p-4 pb-0">
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-700 text-xl leading-none transition-colors"
+              className="text-gray-400 hover:text-gray-700 text-xl leading-none transition-colors cursor-pointer"
               aria-label="Закрыть"
             >
               ×

@@ -40,7 +40,7 @@ export function AddTaskForm() {
           setIsOpen(true)
           setTimeout(() => inputRef.current?.focus(), 0)
         }}
-        className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 py-2 transition-colors"
+        className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 py-2 transition-colors cursor-pointer"
       >
         <span className="text-lg leading-none">+</span> Добавить задачу
       </button>

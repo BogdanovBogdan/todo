@@ -44,12 +44,12 @@ export function DatePicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors ${
+        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors cursor-pointer ${
           value
             ? isOverdue
-              ? "border-red-200 text-red-500 bg-red-50 hover:bg-red-100"
-              : "border-blue-200 text-blue-600 bg-blue-50 hover:bg-blue-100"
-            : "border-gray-200 text-gray-400 hover:bg-gray-50"
+              ? "border-red-200 text-red-500 bg-red-50 md:hover:bg-red-100"
+              : "border-blue-200 text-blue-600 bg-blue-50 md:hover:bg-blue-100"
+            : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
         }`}
       >
         <span>📅</span>
