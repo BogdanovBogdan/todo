@@ -1,21 +1,33 @@
 "use client"
 
-import { format, isToday, isTomorrow, isYesterday } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 import { DayPicker } from "react-day-picker"
 import "react-day-picker/style.css"
+import { dateStrToLocal, localDateToStr } from "@/lib/utils/tz"
 
 interface Props {
-  value?: Date | null
-  onChange: (date: Date | null) => void
+  value?: string | null
+  onChange: (date: string | null) => void
   placeholder?: string
 }
 
-function formatDate(date: Date): string {
-  if (isToday(date)) return "Сегодня"
-  if (isTomorrow(date)) return "Завтра"
-  if (isYesterday(date)) return "Вчера"
-  return format(date, "d MMM")
+function formatDate(str: string): string {
+  const todayStr = new Intl.DateTimeFormat("en-CA").format(new Date())
+  const [ty, tm, td] = todayStr.split("-").map(Number)
+  const tomorrow = new Intl.DateTimeFormat("en-CA").format(
+    new Date(ty, tm - 1, td + 1)
+  )
+  const yesterday = new Intl.DateTimeFormat("en-CA").format(
+    new Date(ty, tm - 1, td - 1)
+  )
+  if (str === todayStr) return "Сегодня"
+  if (str === tomorrow) return "Завтра"
+  if (str === yesterday) return "Вчера"
+  const [y, m, d] = str.split("-").map(Number)
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(y, m - 1, d, 12))
 }
 
 export function DatePicker({
@@ -37,7 +49,8 @@ export function DatePicker({
     return () => document.removeEventListener("mousedown", onMouseDown)
   }, [open])
 
-  const isOverdue = value && value < new Date() && !isToday(value)
+  const todayStr = new Intl.DateTimeFormat("en-CA").format(new Date())
+  const isOverdue = value ? value < todayStr : false
 
   return (
     <div ref={ref} className="relative">
@@ -60,9 +73,9 @@ export function DatePicker({
         <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-xl border border-gray-200 shadow-xl p-1">
           <DayPicker
             mode="single"
-            selected={value ?? undefined}
+            selected={value ? dateStrToLocal(value) : undefined}
             onSelect={(date) => {
-              onChange(date ?? null)
+              onChange(date ? localDateToStr(date) : null)
               setOpen(false)
             }}
             style={

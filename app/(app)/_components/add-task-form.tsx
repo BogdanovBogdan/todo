@@ -7,23 +7,21 @@ import { DatePicker } from "./date-picker"
 export function AddTaskForm() {
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [dueDate, setDueDate] = useState<Date | null>(new Date())
+  const [dueDate, setDueDate] = useState<string | null>(
+    new Intl.DateTimeFormat("en-CA").format(new Date())
+  )
   const inputRef = useRef<HTMLInputElement>(null)
 
   function close() {
     setIsOpen(false)
-    setDueDate(new Date())
+    setDueDate(new Intl.DateTimeFormat("en-CA").format(new Date()))
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    // Inject dueDate from state (not from hidden input)
     if (dueDate) {
-      const y = dueDate.getFullYear()
-      const m = String(dueDate.getMonth() + 1).padStart(2, "0")
-      const d = String(dueDate.getDate()).padStart(2, "0")
-      formData.set("dueDate", `${y}-${m}-${d}`)
+      formData.set("dueDate", dueDate)
     } else {
       formData.delete("dueDate")
     }
@@ -97,6 +95,5 @@ export function AddTaskForm() {
         </div>
       </div>
     </form>
-
   )
 }

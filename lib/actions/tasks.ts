@@ -11,11 +11,6 @@ function revalidateTasks() {
   revalidatePath("/", "layout")
 }
 
-function parseDateStr(str: string): Date {
-  const [y, m, d] = str.split("-").map(Number)
-  return new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
-}
-
 export async function createTask(formData: FormData) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -29,7 +24,7 @@ export async function createTask(formData: FormData) {
   await db.insert(tasks).values({
     userId: session.user.id,
     title,
-    dueDate: dueDateStr ? parseDateStr(dueDateStr) : null,
+    dueDate: dueDateStr || null,
     estimatedDuration: estimateStr ? parseEstimate(estimateStr) : null,
   })
 
@@ -56,11 +51,9 @@ export async function updateTaskDueDate(id: string, dueDateStr: string | null) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  const dueDate = dueDateStr ? parseDateStr(dueDateStr) : null
-
   await db
     .update(tasks)
-    .set({ dueDate, updatedAt: new Date() })
+    .set({ dueDate: dueDateStr || null, updatedAt: new Date() })
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 
   revalidateTasks()

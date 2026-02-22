@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   integer,
   pgTable,
   primaryKey,
@@ -19,6 +20,7 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
+  timezone: text("timezone"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 })
 
@@ -85,7 +87,7 @@ export const tasks = pgTable("tasks", {
   title: text("title").notNull(),
   description: text("description"),
   estimatedDuration: integer("estimated_duration"), // seconds, nullable
-  dueDate: timestamp("due_date", { mode: "date" }),
+  dueDate: date("due_date", { mode: "string" }),
   completed: boolean("completed").default(false).notNull(),
   completedAt: timestamp("completed_at", { mode: "date" }),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),

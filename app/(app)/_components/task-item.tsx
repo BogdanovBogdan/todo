@@ -4,22 +4,33 @@ import { useState, useTransition } from "react"
 import { toggleTask } from "@/lib/actions/tasks"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
-import { isToday, isTomorrow, isYesterday, format } from "date-fns"
 
 interface Task {
   id: string
   title: string
   description: string | null
   completed: boolean
-  dueDate: Date | null
+  dueDate: string | null
   estimatedDuration: number | null
 }
 
-function formatDate(date: Date): string {
-  if (isToday(date)) return "Сегодня"
-  if (isTomorrow(date)) return "Завтра"
-  if (isYesterday(date)) return "Вчера"
-  return format(date, "d MMM")
+function formatDate(str: string): string {
+  const today = new Intl.DateTimeFormat("en-CA").format(new Date())
+  const [ty, tm, td] = today.split("-").map(Number)
+  const tomorrow = new Intl.DateTimeFormat("en-CA").format(
+    new Date(ty, tm - 1, td + 1)
+  )
+  const yesterday = new Intl.DateTimeFormat("en-CA").format(
+    new Date(ty, tm - 1, td - 1)
+  )
+  if (str === today) return "Сегодня"
+  if (str === tomorrow) return "Завтра"
+  if (str === yesterday) return "Вчера"
+  const [y, m, d] = str.split("-").map(Number)
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(y, m - 1, d, 12))
 }
 
 export function TaskItem({ task }: { task: Task }) {

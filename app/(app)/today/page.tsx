@@ -1,7 +1,8 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks } from "@/db/schema"
-import { and, desc, eq, gte, lt } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { AddTaskForm } from "../_components/add-task-form"
 import { TaskItem } from "../_components/task-item"
@@ -16,15 +17,15 @@ export default async function TodayPage({
 
   const session = await auth()
 
-  const now = new Date()
-  const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
-  const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1))
+  const cookieStore = await cookies()
+  const todayStr =
+    cookieStore.get("local_today")?.value ??
+    new Date().toISOString().slice(0, 10)
 
   const allTasks = await db.query.tasks.findMany({
     where: and(
       eq(tasks.userId, session!.user!.id!),
-      gte(tasks.dueDate, startOfDay),
-      lt(tasks.dueDate, endOfDay)
+      eq(tasks.dueDate, todayStr)
     ),
     orderBy: [desc(tasks.createdAt)],
   })

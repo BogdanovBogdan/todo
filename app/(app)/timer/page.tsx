@@ -1,9 +1,9 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks, timeLogs } from "@/db/schema"
-import { addSeconds, format, isToday, isYesterday, startOfWeek } from "date-fns"
-import { ru } from "date-fns/locale"
+import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
 import { desc, eq } from "drizzle-orm"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { EditableDuration } from "./_components/editable-duration"
 import { LogActions } from "./_components/log-actions"
@@ -17,15 +17,21 @@ function formatDuration(seconds: number): string {
   return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
 }
 
-function formatTimeRange(startTime: Date, duration: number): string {
-  const end = addSeconds(startTime, duration)
-  return `${format(startTime, "HH:mm")} — ${format(end, "HH:mm")}`
+function formatTimeRange(startTime: Date, duration: number, tz: string): string {
+  const endTime = new Date(startTime.getTime() + duration * 1000)
+  const startStr = formatInTz(startTime, tz, { hour: "2-digit", minute: "2-digit", hour12: false })
+  const endStr = formatInTz(endTime, tz, { hour: "2-digit", minute: "2-digit", hour12: false })
+  return `${startStr} — ${endStr}`
 }
 
-function formatDayLabel(date: Date): string {
-  if (isToday(date)) return "Сегодня"
-  if (isYesterday(date)) return "Вчера"
-  return format(date, "EEE, d MMM", { locale: ru })
+function formatDayLabel(key: string, todayStr: string, yesterdayStr: string, tz: string): string {
+  if (key === todayStr) return "Сегодня"
+  if (key === yesterdayStr) return "Вчера"
+  return new Intl.DateTimeFormat("ru-RU", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(getDayBoundsUTC(key, tz).start)
 }
 
 export default async function TimerPage({
@@ -40,6 +46,26 @@ export default async function TimerPage({
   )
 
   const session = await auth()
+
+  const cookieStore = await cookies()
+  const tz =
+    decodeURIComponent(cookieStore.get("user_tz")?.value ?? "") || "UTC"
+  const todayStr =
+    cookieStore.get("local_today")?.value ??
+    new Date().toISOString().slice(0, 10)
+
+  const [ty, tm, td] = todayStr.split("-").map(Number)
+  const yesterdayStr = new Intl.DateTimeFormat("en-CA").format(
+    new Date(ty, tm - 1, td - 1)
+  )
+
+  // Week start (Monday)
+  const todayDate = new Date(ty, tm - 1, td)
+  const dow = todayDate.getDay()
+  const mondayOffset = (dow + 6) % 7
+  const weekStartDate = new Date(ty, tm - 1, td - mondayOffset)
+  const weekStartStr = new Intl.DateTimeFormat("en-CA").format(weekStartDate)
+  const weekStartUTC = getDayBoundsUTC(weekStartStr, tz).start
 
   const logs = await db
     .select({
@@ -56,32 +82,33 @@ export default async function TimerPage({
     .orderBy(desc(timeLogs.startTime))
     .limit(500)
 
-  // Group logs by calendar day
+  // Group logs by local calendar day
   type Log = (typeof logs)[number]
-  const dayMap = new Map<string, { date: Date; logs: Log[]; total: number }>()
+  const dayMap = new Map<string, { logs: Log[]; total: number }>()
 
   for (const log of logs) {
-    const key = format(log.startTime, "yyyy-MM-dd")
+    const key = toLocalDateStr(log.startTime, tz)
     if (!dayMap.has(key)) {
-      dayMap.set(key, { date: log.startTime, logs: [], total: 0 })
+      dayMap.set(key, { logs: [], total: 0 })
     }
     const group = dayMap.get(key)!
     group.logs.push(log)
     group.total += log.duration
   }
 
-  const allDays = Array.from(dayMap.values())
+  const allDays = Array.from(dayMap.entries()).sort((a, b) =>
+    b[0] > a[0] ? 1 : -1
+  )
   const visibleDays = allDays.slice(0, daysToShow)
   const hasMore = allDays.length > daysToShow
 
   // Header stats
   const todayTotal = logs
-    .filter((l) => isToday(l.startTime))
+    .filter((l) => toLocalDateStr(l.startTime, tz) === todayStr)
     .reduce((sum, l) => sum + l.duration, 0)
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
   const weekTotal = logs
-    .filter((l) => l.startTime >= weekStart)
+    .filter((l) => l.startTime >= weekStartUTC)
     .reduce((sum, l) => sum + l.duration, 0)
 
   return (
@@ -117,12 +144,12 @@ export default async function TimerPage({
 
       {/* Day groups */}
       <div className="space-y-6">
-        {visibleDays.map(({ date, logs: dayLogs, total }) => (
-          <div key={format(date, "yyyy-MM-dd")}>
+        {visibleDays.map(([key, { logs: dayLogs, total }]) => (
+          <div key={key}>
             {/* Day header */}
             <div className="flex items-center justify-between mb-2 px-1">
               <span className="text-sm font-semibold text-gray-700">
-                {formatDayLabel(date)}
+                {formatDayLabel(key, todayStr, yesterdayStr, tz)}
               </span>
               <span className="text-sm font-mono text-gray-500">
                 {formatDuration(total)}
@@ -147,7 +174,7 @@ export default async function TimerPage({
                   <LogActions taskId={log.taskId} taskTitle={log.taskTitle} />
 
                   <span className="hidden md:block text-xs text-gray-400 flex-shrink-0 tabular-nums">
-                    {formatTimeRange(log.startTime, log.duration)}
+                    {formatTimeRange(log.startTime, log.duration, tz)}
                   </span>
 
                   <EditableDuration logId={log.id} initialDuration={log.duration} />

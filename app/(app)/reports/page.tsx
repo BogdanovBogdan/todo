@@ -1,40 +1,72 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks, timeLogs } from "@/db/schema"
-import {
-  addWeeks,
-  eachDayOfInterval,
-  endOfMonth,
-  endOfWeek,
-  format,
-  isToday,
-  startOfMonth,
-  startOfWeek,
-} from "date-fns"
-import { ru } from "date-fns/locale"
+import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
 import { and, eq, gte, inArray, lt, sql } from "drizzle-orm"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
 
 type Period = "week" | "last-week" | "month"
 
-function getPeriodRange(period: Period) {
-  const now = new Date()
+function eachLocalDay(startStr: string, endStr: string): string[] {
+  const result: string[] = []
+  let cur = startStr
+  while (cur <= endStr) {
+    result.push(cur)
+    const [y, m, d] = cur.split("-").map(Number)
+    const next = new Date(y, m - 1, d + 1)
+    cur = new Intl.DateTimeFormat("en-CA").format(next)
+  }
+  return result
+}
+
+function getPeriodRange(
+  period: Period,
+  tz: string,
+  todayStr: string
+): { start: Date; end: Date; startStr: string; endStr: string } {
+  const [ty, tm, td] = todayStr.split("-").map(Number)
+  const todayDate = new Date(ty, tm - 1, td)
+  const dow = todayDate.getDay() // 0=Sun..6=Sat
+  const mondayOffset = (dow + 6) % 7 // days since Monday
+
   switch (period) {
-    case "week":
+    case "week": {
+      const monDate = new Date(ty, tm - 1, td - mondayOffset)
+      const sunDate = new Date(ty, tm - 1, td - mondayOffset + 6)
+      const startStr = new Intl.DateTimeFormat("en-CA").format(monDate)
+      const endStr = new Intl.DateTimeFormat("en-CA").format(sunDate)
       return {
-        start: startOfWeek(now, { weekStartsOn: 1 }),
-        end: endOfWeek(now, { weekStartsOn: 1 }),
-      }
-    case "last-week": {
-      const prev = addWeeks(now, -1)
-      return {
-        start: startOfWeek(prev, { weekStartsOn: 1 }),
-        end: endOfWeek(prev, { weekStartsOn: 1 }),
+        start: getDayBoundsUTC(startStr, tz).start,
+        end: getDayBoundsUTC(endStr, tz).end,
+        startStr,
+        endStr,
       }
     }
-    case "month":
-      return { start: startOfMonth(now), end: endOfMonth(now) }
+    case "last-week": {
+      const monDate = new Date(ty, tm - 1, td - mondayOffset - 7)
+      const sunDate = new Date(ty, tm - 1, td - mondayOffset - 1)
+      const startStr = new Intl.DateTimeFormat("en-CA").format(monDate)
+      const endStr = new Intl.DateTimeFormat("en-CA").format(sunDate)
+      return {
+        start: getDayBoundsUTC(startStr, tz).start,
+        end: getDayBoundsUTC(endStr, tz).end,
+        startStr,
+        endStr,
+      }
+    }
+    case "month": {
+      const startStr = `${ty}-${String(tm).padStart(2, "0")}-01`
+      const lastDay = new Date(ty, tm, 0).getDate()
+      const endStr = `${ty}-${String(tm).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`
+      return {
+        start: getDayBoundsUTC(startStr, tz).start,
+        end: getDayBoundsUTC(endStr, tz).end,
+        startStr,
+        endStr,
+      }
+    }
   }
 }
 
@@ -60,7 +92,14 @@ export default async function ReportsPage({
   const period: Period =
     raw === "last-week" || raw === "month" ? raw : "week"
 
-  const { start, end } = getPeriodRange(period)
+  const cookieStore = await cookies()
+  const tz =
+    decodeURIComponent(cookieStore.get("user_tz")?.value ?? "") || "UTC"
+  const todayStr =
+    cookieStore.get("local_today")?.value ??
+    new Date().toISOString().slice(0, 10)
+
+  const { start, end, startStr, endStr } = getPeriodRange(period, tz, todayStr)
   const session = await auth()
 
   const logs = await db
@@ -112,18 +151,18 @@ export default async function ReportsPage({
     }
   }
 
-  // ── Aggregate by day & task ──────────────────────────────────────────────────
+  // ── Aggregate by local day & task ────────────────────────────────────────────
   type TaskRow = { taskTitle: string; duration: number; completed: boolean }
   type DayData = { total: number; tasks: Map<string, TaskRow> }
 
-  const allDays = eachDayOfInterval({ start, end })
+  const allDayStrs = eachLocalDay(startStr, endStr)
   const dayMap = new Map<string, DayData>()
-  for (const d of allDays) {
-    dayMap.set(format(d, "yyyy-MM-dd"), { total: 0, tasks: new Map() })
+  for (const ds of allDayStrs) {
+    dayMap.set(ds, { total: 0, tasks: new Map() })
   }
 
   for (const log of logs) {
-    const key = format(log.startTime, "yyyy-MM-dd")
+    const key = toLocalDateStr(log.startTime, tz)
     const day = dayMap.get(key)
     if (!day) continue
     day.total += log.duration
@@ -139,16 +178,16 @@ export default async function ReportsPage({
     }
   }
 
-  const chartDays = allDays.map((d) => {
-    const key = format(d, "yyyy-MM-dd")
-    return { date: d, key, total: dayMap.get(key)?.total ?? 0 }
-  })
+  const chartDays = allDayStrs.map((key) => ({
+    key,
+    total: dayMap.get(key)?.total ?? 0,
+  }))
 
   const maxTotal = Math.max(...chartDays.map((d) => d.total), 1)
   const periodTotal = chartDays.reduce((s, d) => s + d.total, 0)
   const daysWithData = chartDays
     .filter((d) => d.total > 0)
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .sort((a, b) => (b.key > a.key ? 1 : -1))
 
   return (
     <div className="max-w-2xl w-full min-w-0">
@@ -186,9 +225,9 @@ export default async function ReportsPage({
       {/* Bar chart */}
       <div className="bg-white rounded-xl border border-gray-100 p-5 mb-8">
         <div className="flex items-end gap-1.5" style={{ height: 120 }}>
-          {chartDays.map(({ date, key, total }) => {
+          {chartDays.map(({ key, total }) => {
             const pct = total > 0 ? Math.max(4, (total / maxTotal) * 100) : 0
-            const today = isToday(date)
+            const isToday = key === todayStr
             return (
               <div
                 key={key}
@@ -199,7 +238,7 @@ export default async function ReportsPage({
                     <div
                       title={formatDuration(total)}
                       className={`w-full rounded-t transition-all ${
-                        today ? "bg-red-400" : "bg-gray-200 hover:bg-gray-300"
+                        isToday ? "bg-red-400" : "bg-gray-200 hover:bg-gray-300"
                       }`}
                       style={{ height: `${pct}%` }}
                     />
@@ -210,12 +249,12 @@ export default async function ReportsPage({
                 </div>
                 <span
                   className={`text-[10px] leading-none ${
-                    today
-                      ? "font-semibold text-red-500"
-                      : "text-gray-400"
+                    isToday ? "font-semibold text-red-500" : "text-gray-400"
                   }`}
                 >
-                  {format(date, "EEE", { locale: ru })}
+                  {formatInTz(getDayBoundsUTC(key, tz).start, tz, {
+                    weekday: "short",
+                  })}
                 </span>
               </div>
             )
@@ -230,28 +269,36 @@ export default async function ReportsPage({
         </p>
       ) : (
         <div className="space-y-6">
-          {daysWithData.map(({ date, key, total }) => {
+          {daysWithData.map(({ key, total }) => {
             const taskList = Array.from(
               dayMap.get(key)!.tasks.entries()
             ).sort((a, b) => b[1].duration - a[1].duration)
 
-            const dayLabel = isToday(date)
-              ? "Сегодня"
-              : format(date, "EEEE, d MMMM", { locale: ru })
+            const dayLabel =
+              key === todayStr
+                ? "Сегодня"
+                : new Intl.DateTimeFormat("ru-RU", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  }).format(getDayBoundsUTC(key, tz).start)
             const totalFormatted = formatDuration(total)
 
             const copyTasks = taskList.map(([taskId, task]) => {
               const allTime = allTimeByTask.get(taskId)
               const estimated = allTime?.estimatedDuration ?? null
               const totalTracked = allTime?.totalTracked ?? 0
-              const isDone = estimated !== null
-                ? totalTracked >= estimated
-                : task.completed
+              const isDone =
+                estimated !== null
+                  ? totalTracked >= estimated
+                  : task.completed
               return {
                 title: task.taskTitle,
                 completed: isDone,
                 trackedFormatted: formatDuration(task.duration),
-                estimatedFormatted: estimated ? formatDuration(estimated) : null,
+                estimatedFormatted: estimated
+                  ? formatDuration(estimated)
+                  : null,
               }
             })
 
@@ -282,13 +329,17 @@ export default async function ReportsPage({
                     const totalTracked = allTime?.totalTracked ?? 0
                     const ratio = estimated ? totalTracked / estimated : null
                     const indicatorColor =
-                      ratio === null ? null
-                      : ratio >= 1 ? "text-green-500"
-                      : ratio >= 0.8 ? "text-orange-400"
-                      : "text-red-500"
-                    const isDone = estimated !== null
-                      ? totalTracked >= estimated
-                      : task.completed
+                      ratio === null
+                        ? null
+                        : ratio >= 1
+                          ? "text-green-500"
+                          : ratio >= 0.8
+                            ? "text-orange-400"
+                            : "text-red-500"
+                    const isDone =
+                      estimated !== null
+                        ? totalTracked >= estimated
+                        : task.completed
 
                     return (
                       <div key={taskId} className="px-4 py-3">
@@ -307,8 +358,11 @@ export default async function ReportsPage({
                         {/* Estimate indicator row */}
                         {estimated !== null && (
                           <div className="mt-1 pl-7">
-                            <span className={`text-xs font-mono ${indicatorColor}`}>
-                              {formatDuration(totalTracked)} / {formatDuration(estimated)}
+                            <span
+                              className={`text-xs font-mono ${indicatorColor}`}
+                            >
+                              {formatDuration(totalTracked)} /{" "}
+                              {formatDuration(estimated)}
                             </span>
                           </div>
                         )}
