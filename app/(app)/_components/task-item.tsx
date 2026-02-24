@@ -5,6 +5,14 @@ import { toggleTask } from "@/lib/actions/tasks"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
 
+function formatEstimate(seconds: number): string {
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  if (h > 0 && m > 0) return `${h}ч ${m}м`
+  if (h > 0) return `${h}ч`
+  return `${m}м`
+}
+
 interface Task {
   id: string
   title: string
@@ -36,7 +44,7 @@ function formatDate(str: string): string {
 export function TaskItem({ task }: { task: Task }) {
   const [isPending, startTransition] = useTransition()
   const [modalOpen, setModalOpen] = useState(false)
-  const { state } = useTimer()
+  const { state, start, stop } = useTimer()
 
   const isTracking = state.taskId === task.id && state.status !== "idle"
 
@@ -48,7 +56,7 @@ export function TaskItem({ task }: { task: Task }) {
         }`}
       >
         <div
-          className="flex items-start gap-3 py-3 cursor-pointer"
+          className="flex items-start gap-3 py-3 cursor-pointer group"
           onClick={() => setModalOpen(true)}
         >
           {/* Checkbox */}
@@ -84,11 +92,44 @@ export function TaskItem({ task }: { task: Task }) {
                   {formatDate(task.dueDate)}
                 </span>
               )}
+              {task.estimatedDuration && (
+                <span className="text-xs text-gray-400">
+                  ⏳ {formatEstimate(task.estimatedDuration)}
+                </span>
+              )}
               {isTracking && (
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               )}
             </div>
           </div>
+
+          {/* Timer button */}
+          {!task.completed && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                if (isTracking) {
+                  stop()
+                } else {
+                  start(task.id, task.title, "stopwatch")
+                }
+              }}
+              aria-label={isTracking ? "Остановить таймер" : "Запустить таймер"}
+              className={`flex-shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full transition-all cursor-pointer ${
+                isTracking
+                  ? "bg-red-50 text-red-500"
+                  : "opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50"
+              }`}
+            >
+              {isTracking ? (
+                <span className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+              ) : (
+                <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 translate-x-px">
+                  <path d="M3 2.5l10 5.5-10 5.5V2.5z" />
+                </svg>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
