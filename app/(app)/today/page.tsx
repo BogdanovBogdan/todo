@@ -64,7 +64,7 @@ export default async function TodayPage({
       </div>
 
       <div className="mt-2">
-        <AddTaskForm />
+        <AddTaskForm defaultDate={new Intl.DateTimeFormat("en-CA").format(new Date())} />
       </div>
     </div>
   )

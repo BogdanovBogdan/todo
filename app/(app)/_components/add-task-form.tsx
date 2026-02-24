@@ -4,17 +4,15 @@ import { useRef, useState, useTransition } from "react"
 import { createTask } from "@/lib/actions/tasks"
 import { DatePicker } from "./date-picker"
 
-export function AddTaskForm() {
+export function AddTaskForm({ defaultDate }: { defaultDate?: string | null }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const [dueDate, setDueDate] = useState<string | null>(
-    new Intl.DateTimeFormat("en-CA").format(new Date())
-  )
+  const [dueDate, setDueDate] = useState<string | null>(defaultDate ?? null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   function close() {
     setIsOpen(false)
-    setDueDate(new Intl.DateTimeFormat("en-CA").format(new Date()))
+    setDueDate(defaultDate ?? null)
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
