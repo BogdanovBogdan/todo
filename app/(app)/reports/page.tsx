@@ -78,9 +78,9 @@ function formatDuration(sec: number): string {
 }
 
 const PERIOD_LABELS: Record<Period, string> = {
-  week: "Неделя",
-  "last-week": "Прошлая",
-  month: "Месяц",
+  week: "Week",
+  "last-week": "Last week",
+  month: "Month",
 }
 
 export default async function ReportsPage({
@@ -193,7 +193,7 @@ export default async function ReportsPage({
     <div className="max-w-2xl w-full min-w-0">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Отчёты</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
 
         <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
           {(["week", "last-week", "month"] as Period[]).map((p, i) => (
@@ -215,7 +215,7 @@ export default async function ReportsPage({
       {/* Total */}
       <div className="mb-8">
         <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-          Всего за период
+          Total for period
         </p>
         <p className="text-3xl font-mono font-semibold text-gray-900">
           {formatDuration(periodTotal)}
@@ -265,7 +265,7 @@ export default async function ReportsPage({
       {/* Day breakdown */}
       {daysWithData.length === 0 ? (
         <p className="text-sm text-gray-400">
-          Нет данных за выбранный период.
+          No data for this period.
         </p>
       ) : (
         <div className="space-y-6">
@@ -276,8 +276,8 @@ export default async function ReportsPage({
 
             const dayLabel =
               key === todayStr
-                ? "Сегодня"
-                : new Intl.DateTimeFormat("ru-RU", {
+                ? "Today"
+                : new Intl.DateTimeFormat("en-US", {
                     weekday: "long",
                     day: "numeric",
                     month: "long",

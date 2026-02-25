@@ -38,7 +38,7 @@ export function AddTaskForm({ defaultDate }: { defaultDate?: string | null }) {
         }}
         className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 py-2 transition-colors cursor-pointer"
       >
-        <span className="text-lg leading-none">+</span> Добавить задачу
+        <span className="text-lg leading-none">+</span> Add task
       </button>
     )
   }
@@ -51,7 +51,7 @@ export function AddTaskForm({ defaultDate }: { defaultDate?: string | null }) {
       <input
         ref={inputRef}
         name="title"
-        placeholder="Название задачи"
+        placeholder="Task name"
         autoFocus
         required
         className="w-full text-sm text-gray-800 placeholder-gray-400 outline-none"
@@ -81,14 +81,14 @@ export function AddTaskForm({ defaultDate }: { defaultDate?: string | null }) {
             onClick={close}
             className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            Отмена
+            Cancel
           </button>
           <button
             type="submit"
             disabled={isPending}
             className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
           >
-            Добавить
+            Add
           </button>
         </div>
       </div>

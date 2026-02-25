@@ -90,7 +90,7 @@ function EstimatePicker({
 
       {open && (
         <div className="absolute top-full left-0 mt-1 z-[60] bg-white rounded-xl border border-gray-200 shadow-xl p-3 w-44">
-          <p className="text-xs text-gray-400 mb-2">Плановое время</p>
+          <p className="text-xs text-gray-400 mb-2">Planned time</p>
           <input
             ref={inputRef}
             type="time"
@@ -109,7 +109,7 @@ function EstimatePicker({
                 onClick={clear}
                 className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
               >
-                Убрать
+                Clear
               </button>
             ) : (
               <span />
@@ -119,7 +119,7 @@ function EstimatePicker({
               onClick={save}
               className="text-xs bg-gray-900 text-white px-3 py-1 rounded-lg hover:bg-gray-700 transition-colors"
             >
-              Сохранить
+              Save
             </button>
           </div>
         </div>
@@ -236,7 +236,7 @@ export function TaskModal({ task, onClose }: Props) {
       {/* Tracked time */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          ⏱ Трекинг
+          ⏱ Tracking
         </p>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm font-mono text-gray-700">
@@ -265,7 +265,7 @@ export function TaskModal({ task, onClose }: Props) {
       {/* Due date */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          📅 Дата
+          📅 Due date
         </p>
         <DatePicker value={task.dueDate} onChange={handleDateChange} />
       </div>
@@ -273,7 +273,7 @@ export function TaskModal({ task, onClose }: Props) {
       {/* Estimate */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          ⏳ Оценка
+          ⏳ Estimate
         </p>
         <EstimatePicker
           taskId={task.id}
@@ -288,7 +288,7 @@ export function TaskModal({ task, onClose }: Props) {
           disabled={isPending}
           className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
-          Удалить задачу
+          Delete task
         </button>
       </div>
     </div>
@@ -349,7 +349,7 @@ export function TaskModal({ task, onClose }: Props) {
               setEditingDesc(false)
             }
           }}
-          placeholder="Добавить описание..."
+          placeholder="Add description..."
           className="text-sm text-gray-600 outline-none border-b border-gray-300 focus:border-gray-600 bg-transparent resize-none w-full"
           style={{ minHeight: "calc(5 * 1.25rem + 1rem)" }}
         />
@@ -362,7 +362,7 @@ export function TaskModal({ task, onClose }: Props) {
               : "text-gray-400 hover:text-gray-500"
           }`}
         >
-          {descValue || "Добавить описание..."}
+          {descValue || "Add description..."}
         </p>
       )}
     </div>
@@ -388,7 +388,7 @@ export function TaskModal({ task, onClose }: Props) {
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-700 text-xl leading-none transition-colors cursor-pointer"
-              aria-label="Закрыть"
+              aria-label="Close"
             >
               ×
             </button>

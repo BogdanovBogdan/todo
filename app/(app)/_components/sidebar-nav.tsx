@@ -12,23 +12,25 @@ const links: { href: string; icon: LucideIcon; label: string }[] = [
   { href: "/reports", icon: BarChart2, label: "Reports" },
 ]
 
-export function BottomNav() {
+export function SidebarNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-white border-t border-gray-200 z-40 flex">
+    <nav className="space-y-1">
       {links.map(({ href, icon: Icon, label }) => {
         const active = pathname === href
         return (
           <Link
             key={href}
             href={href}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs transition-colors ${
-              active ? "text-red-500" : "text-gray-500"
+            className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+              active
+                ? "bg-gray-100 text-gray-900 font-medium"
+                : "text-gray-700 hover:bg-gray-100"
             }`}
           >
-            <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
-            <span>{label}</span>
+            <Icon size={16} strokeWidth={active ? 2.25 : 1.75} />
+            {label}
           </Link>
         )
       })}

@@ -8,9 +8,9 @@ import { TaskModal } from "./task-modal"
 function formatEstimate(seconds: number): string {
   const h = Math.floor(seconds / 3600)
   const m = Math.floor((seconds % 3600) / 60)
-  if (h > 0 && m > 0) return `${h}ч ${m}м`
-  if (h > 0) return `${h}ч`
-  return `${m}м`
+  if (h > 0 && m > 0) return `${h}h ${m}m`
+  if (h > 0) return `${h}h`
+  return `${m}m`
 }
 
 interface Task {
@@ -31,11 +31,11 @@ function formatDate(str: string): string {
   const yesterday = new Intl.DateTimeFormat("en-CA").format(
     new Date(ty, tm - 1, td - 1)
   )
-  if (str === today) return "Сегодня"
-  if (str === tomorrow) return "Завтра"
-  if (str === yesterday) return "Вчера"
+  if (str === today) return "Today"
+  if (str === tomorrow) return "Tomorrow"
+  if (str === yesterday) return "Yesterday"
   const [y, m, d] = str.split("-").map(Number)
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
   }).format(new Date(y, m - 1, d, 12))

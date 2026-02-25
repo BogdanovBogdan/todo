@@ -25,9 +25,9 @@ function formatTimeRange(startTime: Date, duration: number, tz: string): string 
 }
 
 function formatDayLabel(key: string, todayStr: string, yesterdayStr: string, tz: string): string {
-  if (key === todayStr) return "Сегодня"
-  if (key === yesterdayStr) return "Вчера"
-  return new Intl.DateTimeFormat("ru-RU", {
+  if (key === todayStr) return "Today"
+  if (key === yesterdayStr) return "Yesterday"
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -113,13 +113,13 @@ export default async function TimerPage({
 
   return (
     <div className="max-w-2xl w-full min-w-0">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Таймер</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Timer</h1>
 
       {/* Stats */}
       <div className="flex items-center gap-8 mb-8 pb-6 border-b border-gray-100">
         <div>
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            Сегодня
+            Today
           </p>
           <p className="text-2xl font-mono font-semibold text-gray-900">
             {formatDuration(todayTotal)}
@@ -127,7 +127,7 @@ export default async function TimerPage({
         </div>
         <div>
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            За неделю
+            This week
           </p>
           <p className="text-2xl font-mono font-semibold text-gray-900">
             {formatDuration(weekTotal)}
@@ -138,7 +138,7 @@ export default async function TimerPage({
       {/* Empty state */}
       {logs.length === 0 && (
         <p className="text-sm text-gray-400 py-4">
-          Нет записей. Запусти таймер на любой задаче.
+          No entries yet. Start the timer on any task.
         </p>
       )}
 
@@ -192,7 +192,7 @@ export default async function TimerPage({
             href={`/timer?days=${daysToShow + DAYS_PER_PAGE}`}
             className="inline-block px-5 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            Загрузить ещё
+            Load more
           </Link>
         </div>
       )}

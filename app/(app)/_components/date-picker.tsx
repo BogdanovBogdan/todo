@@ -21,11 +21,11 @@ function formatDate(str: string): string {
   const yesterday = new Intl.DateTimeFormat("en-CA").format(
     new Date(ty, tm - 1, td - 1)
   )
-  if (str === todayStr) return "Сегодня"
-  if (str === tomorrow) return "Завтра"
-  if (str === yesterday) return "Вчера"
+  if (str === todayStr) return "Today"
+  if (str === tomorrow) return "Tomorrow"
+  if (str === yesterday) return "Yesterday"
   const [y, m, d] = str.split("-").map(Number)
-  return new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
   }).format(new Date(y, m - 1, d, 12))
@@ -34,7 +34,7 @@ function formatDate(str: string): string {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Дата",
+  placeholder = "Date",
 }: Props) {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState({ top: 0, left: 0 })
@@ -130,7 +130,7 @@ export function DatePicker({
                       }}
                       className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
                     >
-                      Убрать дату
+                      Clear date
                     </button>
                   </div>
                 ) : undefined

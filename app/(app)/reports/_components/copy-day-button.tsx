@@ -23,7 +23,7 @@ export function CopyDayButton({ dayLabel, totalFormatted, tasks }: Props) {
     for (const t of tasks) {
       const status = t.completed ? "✅" : "❌"
       const estimate = t.estimatedFormatted
-        ? ` (план: ${t.estimatedFormatted})`
+        ? ` (est: ${t.estimatedFormatted})`
         : ""
       lines.push(`${status} ${t.title} — ${t.trackedFormatted}${estimate}`)
     }
@@ -37,7 +37,7 @@ export function CopyDayButton({ dayLabel, totalFormatted, tasks }: Props) {
       onClick={handleCopy}
       className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
     >
-      {copied ? "Скопировано ✓" : "Копировать"}
+      {copied ? "Copied ✓" : "Copy"}
     </button>
   )
 }
