@@ -26,6 +26,7 @@ export interface TimerState {
   pausedAt: Date | null
   seconds: number
   workDuration: number
+  timedOutTask: string | null
 }
 
 // ─── localStorage ─────────────────────────────────────────────────────────────
@@ -39,10 +40,9 @@ interface PersistedTimer {
   startTime: string   // ISO — adjusted for pauses
   pausedAt?: string   // ISO — set when paused
   workDuration: number
-  savedAt?: number    // set on tab close so we don't restore
 }
 
-function persistTimer(data: Omit<PersistedTimer, "savedAt">) {
+function persistTimer(data: PersistedTimer) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)) } catch {}
 }
 
@@ -75,6 +75,8 @@ type Action =
   | { type: "TICK" }
   | { type: "RESET" }
   | { type: "SET_TYPE"; timerType: TimerType }
+  | { type: "SET_TIMEOUT_NOTIFICATION"; taskTitle: string }
+  | { type: "DISMISS_NOTIFICATION" }
 
 function initState(workDuration = WORK_DURATION): TimerState {
   return {
@@ -86,6 +88,7 @@ function initState(workDuration = WORK_DURATION): TimerState {
     pausedAt: null,
     seconds: workDuration,
     workDuration,
+    timedOutTask: null,
   }
 }
 
@@ -109,6 +112,7 @@ function reducer(state: TimerState, action: Action): TimerState {
         pausedAt: null,
         seconds: action.timerType === "pomodoro" ? action.workDuration : 0,
         workDuration: action.workDuration,
+        timedOutTask: null,
       }
     case "RESTORE":
       return action.state
@@ -127,6 +131,10 @@ function reducer(state: TimerState, action: Action): TimerState {
         type: action.timerType,
         seconds: action.timerType === "pomodoro" ? state.workDuration : 0,
       }
+    case "SET_TIMEOUT_NOTIFICATION":
+      return { ...initState(state.workDuration), timedOutTask: action.taskTitle }
+    case "DISMISS_NOTIFICATION":
+      return { ...state, timedOutTask: null }
     default:
       return state
   }
@@ -150,6 +158,7 @@ interface TimerContextValue {
   resume: () => void
   stop: () => Promise<void>
   setType: (type: TimerType) => void
+  dismissNotification: () => void
 }
 
 const TimerContext = createContext<TimerContextValue | null>(null)
@@ -164,14 +173,17 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     const persisted = loadPersistedTimer()
     if (!persisted) return
 
-    // Session was already saved on close — don't restore
-    if (persisted.savedAt) {
+    const startTime = new Date(persisted.startTime)
+    const pausedAt = persisted.pausedAt ? new Date(persisted.pausedAt) : null
+
+    // If running (not paused) for more than 24 hours, stop automatically
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+    if (!pausedAt && Date.now() - startTime.getTime() > TWENTY_FOUR_HOURS) {
       clearPersistedTimer()
+      dispatch({ type: "SET_TIMEOUT_NOTIFICATION", taskTitle: persisted.taskTitle })
       return
     }
 
-    const startTime = new Date(persisted.startTime)
-    const pausedAt = persisted.pausedAt ? new Date(persisted.pausedAt) : null
     const refTime = pausedAt ?? new Date()
     const elapsed = Math.floor((refTime.getTime() - startTime.getTime()) / 1000)
 
@@ -201,6 +213,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
           pausedAt,
           seconds: Math.max(0, remaining),
           workDuration: persisted.workDuration,
+          timedOutTask: null,
         },
       })
     } else {
@@ -215,6 +228,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
           pausedAt,
           seconds: elapsed,
           workDuration: persisted.workDuration,
+          timedOutTask: null,
         },
       })
     }
@@ -247,33 +261,9 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.seconds, state.type, state.status, stop])
 
-  // ── Save on tab close (keepalive fetch survives page unload) ─────────────────
-  useEffect(() => {
-    function handleBeforeUnload() {
-      const s = stateRef.current
-      if (!s.taskId || !s.startTime || s.status === "idle") return
-
-      const duration = calcDuration(s)
-      if (duration < 1) return
-
-      fetch("/api/time-logs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          taskId: s.taskId,
-          startTime: s.startTime.toISOString(),
-          duration,
-          type: s.type,
-        }),
-        keepalive: true,
-      }).catch(() => {})
-
-      // Mark localStorage so we don't restore this session on next open
-      updatePersistedTimer({ savedAt: Date.now() })
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload)
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+  // ── Dismiss timeout notification ─────────────────────────────────────────────
+  const dismissNotification = useCallback(() => {
+    dispatch({ type: "DISMISS_NOTIFICATION" })
   }, [])
 
   // ── Start ────────────────────────────────────────────────────────────────────
@@ -312,7 +302,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <TimerContext.Provider value={{ state, start, pause, resume, stop, setType }}>
+    <TimerContext.Provider value={{ state, start, pause, resume, stop, setType, dismissNotification }}>
       {children}
     </TimerContext.Provider>
   )

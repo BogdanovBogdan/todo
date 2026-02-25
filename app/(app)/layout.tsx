@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { BottomNav } from "./_components/bottom-nav"
 import { DateSync } from "./_components/date-sync"
 import { TimerBar } from "./_components/timer/timer-bar"
+import { TimerNotification } from "./_components/timer/timer-notification"
 import { TimerProvider } from "./_components/timer/timer-context"
 
 export default async function AppLayout({
@@ -17,6 +18,7 @@ export default async function AppLayout({
   return (
     <TimerProvider>
       <DateSync />
+      <TimerNotification />
       <div className="flex min-h-screen bg-gray-50">
         {/* Sidebar — desktop only */}
         <aside className="hidden md:flex md:flex-col w-56 border-r border-gray-200 bg-white px-3 py-6 flex-shrink-0">
