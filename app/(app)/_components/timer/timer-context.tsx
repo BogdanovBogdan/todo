@@ -315,7 +315,8 @@ export function useTimer() {
 }
 
 export function formatSeconds(total: number): string {
-  const m = Math.floor(total / 60).toString().padStart(2, "0")
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60).toString().padStart(2, "0")
   const s = (total % 60).toString().padStart(2, "0")
-  return `${m}:${s}`
+  return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`
 }
