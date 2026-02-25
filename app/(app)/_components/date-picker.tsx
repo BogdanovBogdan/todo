@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { DayPicker } from "react-day-picker"
 import "react-day-picker/style.css"
 import { dateStrToLocal, localDateToStr } from "@/lib/utils/tz"
@@ -36,12 +37,34 @@ export function DatePicker({
   placeholder = "Дата",
 }: Props) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    if (!open || !dropdownRef.current || !btnRef.current) return
+    const dropdown = dropdownRef.current.getBoundingClientRect()
+    const btn = btnRef.current.getBoundingClientRect()
+    let top = btn.bottom + 4
+    let left = btn.left
+    if (top + dropdown.height > window.innerHeight - 8) {
+      top = btn.top - dropdown.height - 4
+    }
+    if (left + dropdown.width > window.innerWidth - 8) {
+      left = window.innerWidth - dropdown.width - 8
+    }
+    setPos({ top: Math.max(8, top), left: Math.max(8, left) })
+  }, [open])
 
   useEffect(() => {
     if (!open) return
     function onMouseDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        !ref.current?.contains(target) &&
+        !dropdownRef.current?.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -55,8 +78,15 @@ export function DatePicker({
   return (
     <div ref={ref} className="relative">
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (!open && btnRef.current) {
+            const rect = btnRef.current.getBoundingClientRect()
+            setPos({ top: rect.bottom + 4, left: rect.left })
+          }
+          setOpen((v) => !v)
+        }}
         className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors cursor-pointer ${
           value
             ? isOverdue
@@ -69,40 +99,46 @@ export function DatePicker({
         <span>{value ? formatDate(value) : placeholder}</span>
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-white rounded-xl border border-gray-200 shadow-xl p-1">
-          <DayPicker
-            mode="single"
-            selected={value ? dateStrToLocal(value) : undefined}
-            onSelect={(date) => {
-              onChange(date ? localDateToStr(date) : null)
-              setOpen(false)
-            }}
-            style={
-              {
-                "--rdp-accent-color": "#ef4444",
-                "--rdp-accent-background-color": "#fee2e2",
-              } as React.CSSProperties
-            }
-            footer={
-              value ? (
-                <div className="pt-1 pb-1 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onChange(null)
-                      setOpen(false)
-                    }}
-                    className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
-                  >
-                    Убрать дату
-                  </button>
-                </div>
-              ) : undefined
-            }
-          />
-        </div>
-      )}
+      {open &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+            className="bg-white rounded-xl border border-gray-200 shadow-xl p-1"
+          >
+            <DayPicker
+              mode="single"
+              selected={value ? dateStrToLocal(value) : undefined}
+              onSelect={(date) => {
+                onChange(date ? localDateToStr(date) : null)
+                setOpen(false)
+              }}
+              style={
+                {
+                  "--rdp-accent-color": "#ef4444",
+                  "--rdp-accent-background-color": "#fee2e2",
+                } as React.CSSProperties
+              }
+              footer={
+                value ? (
+                  <div className="pt-1 pb-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(null)
+                        setOpen(false)
+                      }}
+                      className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                    >
+                      Убрать дату
+                    </button>
+                  </div>
+                ) : undefined
+              }
+            />
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
