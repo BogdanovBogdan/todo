@@ -7,9 +7,10 @@ interface Props {
   taskTitle: string
   type: TimerType
   alwaysVisible?: boolean
+  disabled?: boolean
 }
 
-export function TimerButton({ taskId, taskTitle, type, alwaysVisible = false }: Props) {
+export function TimerButton({ taskId, taskTitle, type, alwaysVisible = false, disabled = false }: Props) {
   const { state, start } = useTimer()
 
   const isActive =
@@ -20,13 +21,16 @@ export function TimerButton({ taskId, taskTitle, type, alwaysVisible = false }: 
   return (
     <button
       onClick={() => start(taskId, taskTitle, type)}
+      disabled={disabled}
       title={type === "pomodoro" ? "Помодоро (25 мин)" : "Трекать время"}
-      className={`flex-shrink-0 text-sm px-1.5 py-0.5 rounded transition-all cursor-pointer ${
-        isActive
-          ? "opacity-100 text-red-500"
+      className={`flex-shrink-0 text-sm px-1.5 py-0.5 rounded transition-all ${
+        disabled
+          ? "opacity-30 cursor-not-allowed"
+          : isActive
+          ? "opacity-100 text-red-500 cursor-pointer"
           : alwaysVisible
-          ? "opacity-100 text-gray-400 md:hover:text-red-400 md:hover:bg-red-50"
-          : "opacity-0 group-hover:opacity-100 text-gray-400 md:hover:text-red-400 md:hover:bg-red-50"
+          ? "opacity-100 text-gray-400 md:hover:text-red-400 md:hover:bg-red-50 cursor-pointer"
+          : "opacity-0 group-hover:opacity-100 text-gray-400 md:hover:text-red-400 md:hover:bg-red-50 cursor-pointer"
       }`}
     >
       {type === "pomodoro" ? "🍅" : "▶"}

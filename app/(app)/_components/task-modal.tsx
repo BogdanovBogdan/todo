@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react"
 import {
   deleteTask,
+  toggleTask,
   updateTaskDescription,
   updateTaskDueDate,
   updateTaskEstimate,
@@ -32,9 +33,11 @@ interface Props {
 function EstimatePicker({
   taskId,
   estimatedDuration,
+  disabled = false,
 }: {
   taskId: string
   estimatedDuration: number | null
+  disabled?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState(
@@ -73,8 +76,10 @@ function EstimatePicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        disabled={isPending}
-        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors cursor-pointer ${
+        disabled={isPending || disabled}
+        className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors ${
+          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        } ${
           estimatedDuration
             ? "border-purple-200 text-purple-600 bg-purple-50 md:hover:bg-purple-100"
             : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
@@ -129,8 +134,20 @@ function EstimatePicker({
 }
 
 export function TaskModal({ task, onClose }: Props) {
-  const { state, start } = useTimer()
+  const { state, stop } = useTimer()
   const [isPending, startTransition] = useTransition()
+
+  // Completion state
+  const [completed, setCompleted] = useState(task.completed)
+
+  async function handleToggleComplete() {
+    const next = !completed
+    if (next && state.taskId === task.id && state.status !== "idle") {
+      await stop()
+    }
+    setCompleted(next)
+    startTransition(() => toggleTask(task.id, next))
+  }
 
   // Tracked time
   const [trackedBase, setTrackedBase] = useState<number | null>(null)
@@ -252,12 +269,14 @@ export function TaskModal({ task, onClose }: Props) {
             taskTitle={titleValue}
             type="stopwatch"
             alwaysVisible
+            disabled={completed}
           />
           <TimerButton
             taskId={task.id}
             taskTitle={titleValue}
             type="pomodoro"
             alwaysVisible
+            disabled={completed}
           />
         </div>
       </div>
@@ -267,7 +286,9 @@ export function TaskModal({ task, onClose }: Props) {
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
           📅 Due date
         </p>
-        <DatePicker value={task.dueDate} onChange={handleDateChange} />
+        <div className={completed ? "pointer-events-none opacity-50" : ""}>
+          <DatePicker value={task.dueDate} onChange={handleDateChange} />
+        </div>
       </div>
 
       {/* Estimate */}
@@ -278,6 +299,7 @@ export function TaskModal({ task, onClose }: Props) {
         <EstimatePicker
           taskId={task.id}
           estimatedDuration={task.estimatedDuration}
+          disabled={completed}
         />
       </div>
 
@@ -285,7 +307,7 @@ export function TaskModal({ task, onClose }: Props) {
       <div className="mt-auto pt-2">
         <button
           onClick={handleDelete}
-          disabled={isPending}
+          disabled={isPending || completed}
           className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
           Delete task
@@ -298,73 +320,106 @@ export function TaskModal({ task, onClose }: Props) {
     <div className="flex flex-col gap-4 flex-1 min-w-0">
       {/* Title */}
       {editingTitle ? (
-        <textarea
-          ref={titleRefCallback}
-          value={titleValue}
-          rows={1}
-          onChange={(e) => {
-            setTitleValue(e.target.value)
-            const el = e.target
-            el.style.height = "1px"
-            el.style.height = el.scrollHeight + "px"
-          }}
-          onBlur={commitTitle}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault()
-              commitTitle()
-            }
-            if (e.key === "Escape") {
-              setTitleValue(task.title)
-              setEditingTitle(false)
-            }
-          }}
-          className="text-xl font-semibold text-gray-900 outline-none border-b border-gray-300 focus:border-gray-600 bg-transparent resize-none w-full overflow-y-auto"
-          style={{ maxHeight: "9rem" }}
-        />
+        <div className="flex items-start gap-3">
+          <button
+            disabled
+            aria-label={completed ? "Mark incomplete" : "Mark complete"}
+            className={`mt-1.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 opacity-30 cursor-not-allowed ${
+              completed ? "bg-gray-300 border-gray-300" : "border-gray-300"
+            }`}
+          />
+          <textarea
+            ref={titleRefCallback}
+            value={titleValue}
+            rows={1}
+            onChange={(e) => {
+              setTitleValue(e.target.value)
+              const el = e.target
+              el.style.height = "1px"
+              el.style.height = el.scrollHeight + "px"
+            }}
+            onBlur={commitTitle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                commitTitle()
+              }
+              if (e.key === "Escape") {
+                setTitleValue(task.title)
+                setEditingTitle(false)
+              }
+            }}
+            className="text-xl font-semibold text-gray-900 outline-none border-b border-gray-300 focus:border-gray-600 bg-transparent resize-none flex-1 overflow-y-auto"
+            style={{ maxHeight: "9rem" }}
+          />
+        </div>
       ) : (
-        <h2
-          onClick={() => setEditingTitle(true)}
-          className="text-xl font-semibold text-gray-900 cursor-text hover:text-gray-700 transition-colors"
-        >
-          {titleValue}
-        </h2>
+        <div className="flex items-start gap-3">
+          <button
+            onClick={handleToggleComplete}
+            disabled={editingTitle || editingDesc}
+            aria-label={completed ? "Mark incomplete" : "Mark complete"}
+            className={`mt-1.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
+              editingTitle || editingDesc
+                ? "opacity-30 cursor-not-allowed"
+                : "cursor-pointer"
+            } ${
+              completed
+                ? "bg-gray-300 border-gray-300"
+                : "border-gray-300 hover:border-red-400"
+            }`}
+          />
+          <h2
+            onClick={() => !completed && setEditingTitle(true)}
+            className={`text-xl font-semibold transition-colors ${
+              completed
+                ? "line-through text-gray-400 cursor-default"
+                : "text-gray-900 cursor-text hover:text-gray-700"
+            }`}
+          >
+            {titleValue}
+          </h2>
+        </div>
       )}
 
       {/* Description */}
-      {editingDesc ? (
-        <textarea
-          ref={descRef}
-          value={descValue}
-          onChange={(e) => {
-            setDescValue(e.target.value)
-            const el = e.target
-            el.style.height = "1px"
-            el.style.height = el.scrollHeight + "px"
-          }}
-          onBlur={commitDesc}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              setDescValue(task.description ?? "")
-              setEditingDesc(false)
-            }
-          }}
-          placeholder="Add description..."
-          className="text-sm text-gray-600 outline-none border-b border-gray-300 focus:border-gray-600 bg-transparent resize-none w-full"
-          style={{ minHeight: "calc(5 * 1.25rem + 1rem)" }}
-        />
-      ) : (
-        <p
-          onClick={() => setEditingDesc(true)}
-          className={`text-sm cursor-text min-h-[60px] ${
-            descValue
-              ? "text-gray-600 hover:text-gray-800"
-              : "text-gray-400 hover:text-gray-500"
-          }`}
-        >
-          {descValue || "Add description..."}
-        </p>
-      )}
+      <div className="pl-[calc(18px+0.75rem)]">
+        {editingDesc ? (
+          <textarea
+            ref={descRef}
+            value={descValue}
+            onChange={(e) => {
+              setDescValue(e.target.value)
+              const el = e.target
+              el.style.height = "1px"
+              el.style.height = el.scrollHeight + "px"
+            }}
+            onBlur={commitDesc}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setDescValue(task.description ?? "")
+                setEditingDesc(false)
+              }
+            }}
+            placeholder="Add description..."
+            className="text-sm text-gray-600 outline-none border-b border-gray-300 focus:border-gray-600 bg-transparent resize-none w-full"
+            style={{ minHeight: "calc(5 * 1.25rem + 1rem)" }}
+          />
+        ) : (
+          <p
+            onClick={() => !completed && setEditingDesc(true)}
+            className={`text-sm min-h-[60px] ${
+              completed
+                ? "text-gray-400 cursor-default"
+                : descValue
+                ? "text-gray-600 hover:text-gray-800 cursor-text"
+                : "text-gray-400 hover:text-gray-500 cursor-text"
+            }`}
+          >
+            {descValue || "Add description..."}
+          </p>
+        )}
+      </div>
     </div>
   )
 
