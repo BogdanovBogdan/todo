@@ -3,7 +3,7 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks } from "@/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { parseEstimate } from "@/lib/utils/time"
 
@@ -105,6 +105,24 @@ export async function deleteTask(id: string) {
   await db
     .delete(tasks)
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
+
+  revalidateTasks()
+}
+
+export async function rescheduleOverdueTasks(newDate: string, todayStr: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  await db
+    .update(tasks)
+    .set({ dueDate: newDate, updatedAt: new Date() })
+    .where(
+      and(
+        eq(tasks.userId, session.user.id),
+        eq(tasks.completed, false),
+        lt(tasks.dueDate, todayStr)
+      )
+    )
 
   revalidateTasks()
 }
