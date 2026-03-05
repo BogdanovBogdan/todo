@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react"
 import { formatSeconds, useTimer } from "./timer-context"
+import { TaskModal } from "../task-modal"
 
 function parseDisplayTime(input: string): number | null {
   const parts = input.trim().split(":").map((s) => parseInt(s, 10))
@@ -15,6 +16,7 @@ export function TimerBar() {
   const { state, pause, resume, stop, setType, adjust } = useTimer()
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState("")
+  const [modalOpen, setModalOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   if (state.status === "idle") return null
@@ -43,6 +45,7 @@ export function TimerBar() {
   }
 
   return (
+    <>
     <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-50">
       {/* Progress bar (pomodoro only) */}
       {isPomodoro && (
@@ -58,9 +61,12 @@ export function TimerBar() {
         {/* Task info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-base">{isPomodoro ? "🍅" : "⏱"}</span>
-          <span className="text-sm text-gray-600 truncate">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="text-sm text-gray-600 truncate hover:text-gray-900 transition-colors cursor-pointer"
+          >
             {state.taskTitle}
-          </span>
+          </button>
         </div>
 
         {/* Timer display — click to edit */}
@@ -136,5 +142,10 @@ export function TimerBar() {
         </div>
       </div>
     </div>
+
+    {modalOpen && state.taskId && (
+      <TaskModal taskId={state.taskId} onClose={() => setModalOpen(false)} />
+    )}
+  </>
   )
 }
