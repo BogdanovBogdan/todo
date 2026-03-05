@@ -295,7 +295,7 @@ export default async function ReportsPage({
               const totalTracked = allTime?.totalTracked ?? 0
               const isDone =
                 estimated !== null
-                  ? totalTracked >= estimated
+                  ? totalTracked >= estimated * 0.9
                   : task.completed
               return {
                 title: task.taskTitle,
@@ -343,7 +343,7 @@ export default async function ReportsPage({
                             : "text-red-500"
                     const isDone =
                       estimated !== null
-                        ? totalTracked >= estimated
+                        ? totalTracked >= estimated * 0.9
                         : task.completed
 
                     return (

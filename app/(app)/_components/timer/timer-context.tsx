@@ -238,6 +238,57 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Cross-tab sync via storage events ───────────────────────────────────────
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key !== STORAGE_KEY) return
+      if (e.newValue === null) {
+        dispatch({ type: "RESET" })
+        return
+      }
+      try {
+        const persisted = JSON.parse(e.newValue) as PersistedTimer
+        const startTime = new Date(persisted.startTime)
+        const pausedAt = persisted.pausedAt ? new Date(persisted.pausedAt) : null
+        const refTime = pausedAt ?? new Date()
+        const elapsed = Math.floor((refTime.getTime() - startTime.getTime()) / 1000)
+        if (persisted.type === "pomodoro") {
+          dispatch({
+            type: "RESTORE",
+            state: {
+              status: pausedAt ? "paused" : "running",
+              type: "pomodoro",
+              taskId: persisted.taskId,
+              taskTitle: persisted.taskTitle,
+              startTime,
+              pausedAt,
+              seconds: Math.max(0, persisted.workDuration - elapsed),
+              workDuration: persisted.workDuration,
+              timedOutTask: null,
+            },
+          })
+        } else {
+          dispatch({
+            type: "RESTORE",
+            state: {
+              status: pausedAt ? "paused" : "running",
+              type: "stopwatch",
+              taskId: persisted.taskId,
+              taskTitle: persisted.taskTitle,
+              startTime,
+              pausedAt,
+              seconds: elapsed,
+              workDuration: persisted.workDuration,
+              timedOutTask: null,
+            },
+          })
+        }
+      } catch {}
+    }
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
+
   // ── Tick (wall-clock based) ──────────────────────────────────────────────────
   useEffect(() => {
     if (state.status !== "running") return
