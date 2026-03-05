@@ -9,6 +9,7 @@ import {
   useReducer,
   useRef,
 } from "react"
+import { useRouter } from "next/navigation"
 
 export const WORK_DURATION = 25 * 60
 
@@ -171,6 +172,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, initState)
   const stateRef = useRef(state)
   stateRef.current = state
+  const router = useRouter()
 
   // ── Restore from localStorage on mount ──────────────────────────────────────
   useEffect(() => {
@@ -307,7 +309,8 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     }
     clearPersistedTimer()
     dispatch({ type: "RESET" })
-  }, [])
+    router.refresh()
+  }, [router])
 
   // ── Auto-complete pomodoro ───────────────────────────────────────────────────
   useEffect(() => {
