@@ -1,32 +1,15 @@
 "use client"
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react"
-import {
-  deleteTask,
-  toggleTask,
-  updateTaskDescription,
-  updateTaskDueDate,
-  updateTaskEstimate,
-  updateTaskTitle,
-} from "@/lib/actions/tasks"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { getTaskTrackedTime } from "@/lib/actions/time-logs"
+import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
 import { TimerButton } from "./timer/timer-button"
 import { DatePicker } from "./date-picker"
 import { formatEstimate, parseEstimate } from "@/lib/utils/time"
-import { formatSeconds } from "./timer/timer-context"
-
-interface Task {
-  id: string
-  title: string
-  description: string | null
-  completed: boolean
-  dueDate: string | null
-  estimatedDuration: number | null
-}
 
 interface Props {
-  task: Task
+  taskId: string
   onClose: () => void
 }
 
@@ -43,7 +26,6 @@ function EstimatePicker({
   const [value, setValue] = useState(
     estimatedDuration ? formatEstimate(estimatedDuration) : ""
   )
-  const [isPending, startTransition] = useTransition()
   const ref = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -61,13 +43,13 @@ function EstimatePicker({
 
   function save() {
     const seconds = parseEstimate(value)
-    startTransition(() => updateTaskEstimate(taskId, seconds))
+    useTaskStore.getState().updateEstimate(taskId, seconds)
     setOpen(false)
   }
 
   function clear() {
     setValue("")
-    startTransition(() => updateTaskEstimate(taskId, null))
+    useTaskStore.getState().updateEstimate(taskId, null)
     setOpen(false)
   }
 
@@ -76,7 +58,7 @@ function EstimatePicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        disabled={isPending || disabled}
+        disabled={disabled}
         className={`flex items-center gap-1 text-xs rounded-md px-2 py-1 border transition-colors ${
           disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
         } ${
@@ -133,39 +115,19 @@ function EstimatePicker({
   )
 }
 
-export function TaskModal({ task, onClose }: Props) {
+export function TaskModal({ taskId, onClose }: Props) {
+  const task = useTaskStore((s) => s.tasks.find((t) => t.id === taskId))
   const { state, stop } = useTimer()
-  const [isPending, startTransition] = useTransition()
-
-  // Completion state
-  const [completed, setCompleted] = useState(task.completed)
-
-  async function handleToggleComplete() {
-    const next = !completed
-    if (next && state.taskId === task.id && state.status !== "idle") {
-      await stop()
-    }
-    setCompleted(next)
-    startTransition(() => toggleTask(task.id, next))
-  }
 
   // Tracked time
   const [trackedBase, setTrackedBase] = useState<number | null>(null)
   useEffect(() => {
-    getTaskTrackedTime(task.id).then(setTrackedBase)
-  }, [task.id])
-
-  const liveAdd =
-    state.taskId === task.id &&
-    state.status === "running" &&
-    state.type === "stopwatch"
-      ? state.seconds
-      : 0
-  const totalTracked = (trackedBase ?? 0) + liveAdd
+    getTaskTrackedTime(taskId).then(setTrackedBase)
+  }, [taskId])
 
   // Title editing
   const [editingTitle, setEditingTitle] = useState(false)
-  const [titleValue, setTitleValue] = useState(task.title)
+  const [titleValue, setTitleValue] = useState(task?.title ?? "")
 
   // Callback ref fires immediately when the textarea mounts — no flash
   const titleRefCallback = useCallback((el: HTMLTextAreaElement | null) => {
@@ -176,18 +138,9 @@ export function TaskModal({ task, onClose }: Props) {
     el.setSelectionRange(el.value.length, el.value.length)
   }, [])
 
-  function commitTitle() {
-    if (titleValue.trim() && titleValue.trim() !== task.title) {
-      startTransition(() => updateTaskTitle(task.id, titleValue))
-    } else {
-      setTitleValue(task.title)
-    }
-    setEditingTitle(false)
-  }
-
   // Description editing
   const [editingDesc, setEditingDesc] = useState(false)
-  const [descValue, setDescValue] = useState(task.description ?? "")
+  const [descValue, setDescValue] = useState(task?.description ?? "")
   const descRef = useRef<HTMLTextAreaElement>(null)
 
   useLayoutEffect(() => {
@@ -200,36 +153,15 @@ export function TaskModal({ task, onClose }: Props) {
     }
   }, [editingDesc])
 
-  function commitDesc() {
-    const trimmed = descValue.trim() || null
-    if (trimmed !== (task.description ?? null)) {
-      startTransition(() => updateTaskDescription(task.id, trimmed))
-    }
-    setEditingDesc(false)
-  }
-
-  // Date
-  function handleDateChange(dateStr: string | null) {
-    startTransition(() => updateTaskDueDate(task.id, dateStr))
-  }
-
-  // Delete
-  function handleDelete() {
-    startTransition(async () => {
-      await deleteTask(task.id)
-      onClose()
-    })
-  }
-
   // Escape key & keyboard
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         if (editingTitle) {
-          setTitleValue(task.title)
+          setTitleValue(task?.title ?? "")
           setEditingTitle(false)
         } else if (editingDesc) {
-          setDescValue(task.description ?? "")
+          setDescValue(task?.description ?? "")
           setEditingDesc(false)
         } else {
           onClose()
@@ -238,7 +170,54 @@ export function TaskModal({ task, onClose }: Props) {
     }
     document.addEventListener("keydown", onKeyDown)
     return () => document.removeEventListener("keydown", onKeyDown)
-  }, [editingTitle, editingDesc, task.title, task.description, onClose])
+  }, [editingTitle, editingDesc, task?.title, task?.description, onClose])
+
+  if (!task) {
+    onClose()
+    return null
+  }
+
+  const liveAdd =
+    state.taskId === task.id &&
+    state.status === "running" &&
+    state.type === "stopwatch"
+      ? state.seconds
+      : 0
+  const totalTracked = (trackedBase ?? 0) + liveAdd
+
+  function commitTitle() {
+    if (titleValue.trim() && titleValue.trim() !== task!.title) {
+      useTaskStore.getState().updateTitle(task!.id, titleValue)
+    } else {
+      setTitleValue(task!.title)
+    }
+    setEditingTitle(false)
+  }
+
+  function commitDesc() {
+    const trimmed = descValue.trim() || null
+    if (trimmed !== (task!.description ?? null)) {
+      useTaskStore.getState().updateDescription(task!.id, trimmed)
+    }
+    setEditingDesc(false)
+  }
+
+  function handleDateChange(dateStr: string | null) {
+    useTaskStore.getState().updateDueDate(task!.id, dateStr)
+  }
+
+  async function handleToggleComplete() {
+    const next = !task!.completed
+    if (next && state.taskId === task!.id && state.status !== "idle") {
+      await stop()
+    }
+    useTaskStore.getState().toggleTask(task!.id, next)
+  }
+
+  function handleDelete() {
+    useTaskStore.getState().deleteTask(task!.id)
+    onClose()
+  }
 
   // Format tracked time as h:mm:ss
   function formatTracked(seconds: number): string {
@@ -269,14 +248,14 @@ export function TaskModal({ task, onClose }: Props) {
             taskTitle={titleValue}
             type="stopwatch"
             alwaysVisible
-            disabled={completed}
+            disabled={task.completed}
           />
           <TimerButton
             taskId={task.id}
             taskTitle={titleValue}
             type="pomodoro"
             alwaysVisible
-            disabled={completed}
+            disabled={task.completed}
           />
         </div>
       </div>
@@ -286,7 +265,7 @@ export function TaskModal({ task, onClose }: Props) {
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
           📅 Due date
         </p>
-        <div className={completed ? "pointer-events-none opacity-50" : ""}>
+        <div className={task.completed ? "pointer-events-none opacity-50" : ""}>
           <DatePicker value={task.dueDate} onChange={handleDateChange} />
         </div>
       </div>
@@ -299,7 +278,7 @@ export function TaskModal({ task, onClose }: Props) {
         <EstimatePicker
           taskId={task.id}
           estimatedDuration={task.estimatedDuration}
-          disabled={completed}
+          disabled={task.completed}
         />
       </div>
 
@@ -307,7 +286,7 @@ export function TaskModal({ task, onClose }: Props) {
       <div className="mt-auto pt-2">
         <button
           onClick={handleDelete}
-          disabled={isPending || completed}
+          disabled={task.completed}
           className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
           Delete task
@@ -323,9 +302,9 @@ export function TaskModal({ task, onClose }: Props) {
         <div className="flex items-start gap-3">
           <button
             disabled
-            aria-label={completed ? "Mark incomplete" : "Mark complete"}
+            aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
             className={`mt-1.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 opacity-30 cursor-not-allowed ${
-              completed ? "bg-gray-300 border-gray-300" : "border-gray-300"
+              task.completed ? "bg-gray-300 border-gray-300" : "border-gray-300"
             }`}
           />
           <textarea
@@ -358,21 +337,21 @@ export function TaskModal({ task, onClose }: Props) {
           <button
             onClick={handleToggleComplete}
             disabled={editingTitle || editingDesc}
-            aria-label={completed ? "Mark incomplete" : "Mark complete"}
+            aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
             className={`mt-1.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors ${
               editingTitle || editingDesc
                 ? "opacity-30 cursor-not-allowed"
                 : "cursor-pointer"
             } ${
-              completed
+              task.completed
                 ? "bg-gray-300 border-gray-300"
                 : "border-gray-300 hover:border-red-400"
             }`}
           />
           <h2
-            onClick={() => !completed && setEditingTitle(true)}
+            onClick={() => !task.completed && setEditingTitle(true)}
             className={`text-xl font-semibold transition-colors ${
-              completed
+              task.completed
                 ? "line-through text-gray-400 cursor-default"
                 : "text-gray-900 cursor-text hover:text-gray-700"
             }`}
@@ -407,9 +386,9 @@ export function TaskModal({ task, onClose }: Props) {
           />
         ) : (
           <p
-            onClick={() => !completed && setEditingDesc(true)}
+            onClick={() => !task.completed && setEditingDesc(true)}
             className={`text-sm min-h-[60px] ${
-              completed
+              task.completed
                 ? "text-gray-400 cursor-default"
                 : descValue
                 ? "text-gray-600 hover:text-gray-800 cursor-text"

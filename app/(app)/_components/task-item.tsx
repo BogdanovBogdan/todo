@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { toggleTask } from "@/lib/actions/tasks"
+import { useState } from "react"
+import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
 
@@ -11,15 +11,6 @@ function formatEstimate(seconds: number): string {
   if (h > 0 && m > 0) return `${h}h ${m}m`
   if (h > 0) return `${h}h`
   return `${m}m`
-}
-
-interface Task {
-  id: string
-  title: string
-  description: string | null
-  completed: boolean
-  dueDate: string | null
-  estimatedDuration: number | null
 }
 
 function formatDate(str: string): string {
@@ -41,20 +32,18 @@ function formatDate(str: string): string {
   }).format(new Date(y, m - 1, d, 12))
 }
 
-export function TaskItem({ task }: { task: Task }) {
-  const [isPending, startTransition] = useTransition()
+export function TaskItem({ taskId }: { taskId: string }) {
+  const task = useTaskStore((s) => s.tasks.find((t) => t.id === taskId))
   const [modalOpen, setModalOpen] = useState(false)
   const { state, start, stop } = useTimer()
+
+  if (!task) return null
 
   const isTracking = state.taskId === task.id && state.status !== "idle"
 
   return (
     <>
-      <div
-        className={`border-b border-gray-100 last:border-0 transition-opacity ${
-          isPending ? "opacity-40" : ""
-        }`}
-      >
+      <div className="border-b border-gray-100 last:border-0">
         <div
           className="flex items-start gap-3 py-3 cursor-pointer group"
           onClick={() => setModalOpen(true)}
@@ -63,7 +52,7 @@ export function TaskItem({ task }: { task: Task }) {
           <button
             onClick={(e) => {
               e.stopPropagation()
-              startTransition(() => toggleTask(task.id, !task.completed))
+              useTaskStore.getState().toggleTask(task.id, !task.completed)
             }}
             aria-label={task.completed ? "Mark incomplete" : "Mark complete"}
             className={`mt-0.5 w-[18px] h-[18px] rounded-full border-2 flex-shrink-0 transition-colors cursor-pointer ${
@@ -134,7 +123,7 @@ export function TaskItem({ task }: { task: Task }) {
       </div>
 
       {modalOpen && (
-        <TaskModal task={task} onClose={() => setModalOpen(false)} />
+        <TaskModal taskId={taskId} onClose={() => setModalOpen(false)} />
       )}
     </>
   )
