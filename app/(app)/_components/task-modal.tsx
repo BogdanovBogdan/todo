@@ -172,8 +172,13 @@ export function TaskModal({ taskId, onClose }: Props) {
   }, [editingTitle, editingDesc, task?.title, onClose])
 
   if (!task) {
-    onClose()
-    return null
+    return (
+      <div
+        className="fixed inset-0 bg-black/40 z-40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+    )
   }
 
   const liveAdd =

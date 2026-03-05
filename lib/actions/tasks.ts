@@ -11,6 +11,25 @@ function revalidateTasks() {
   revalidatePath("/", "layout")
 }
 
+export async function fetchTask(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) return null
+
+  const row = await db.query.tasks.findFirst({
+    where: and(eq(tasks.id, id), eq(tasks.userId, session.user.id)),
+  })
+  if (!row) return null
+
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description ?? null,
+    completed: row.completed,
+    dueDate: row.dueDate ?? null,
+    estimatedDuration: row.estimatedDuration ?? null,
+  }
+}
+
 export async function createTask(formData: FormData) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")

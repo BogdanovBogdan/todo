@@ -7,6 +7,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { EditableDuration } from "./_components/editable-duration"
 import { LogActions } from "./_components/log-actions"
+import { TaskTitleButton } from "../_components/task-title-button"
 
 const DAYS_PER_PAGE = 3
 
@@ -167,9 +168,7 @@ export default async function TimerPage({
                     {log.type === "pomodoro" ? "🍅" : "⏱"}
                   </span>
 
-                  <span className="flex-1 min-w-0 text-sm text-gray-800 truncate">
-                    {log.taskTitle}
-                  </span>
+                  <TaskTitleButton taskId={log.taskId} taskTitle={log.taskTitle} />
 
                   <LogActions taskId={log.taskId} taskTitle={log.taskTitle} />
 

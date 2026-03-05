@@ -7,6 +7,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
 import { EditableTaskDuration } from "./_components/editable-task-duration"
+import { TaskTitleButton } from "../_components/task-title-button"
 
 type Period = "week" | "last-week" | "month"
 
@@ -352,9 +353,7 @@ export default async function ReportsPage({
                           <span className="text-base leading-none flex-shrink-0">
                             {isDone ? "✅" : "❌"}
                           </span>
-                          <span className="text-sm text-gray-800 truncate flex-1 min-w-0">
-                            {task.taskTitle}
-                          </span>
+                          <TaskTitleButton taskId={taskId} taskTitle={task.taskTitle} />
                           <EditableTaskDuration
                             logIds={task.logIds}
                             initialDuration={task.duration}

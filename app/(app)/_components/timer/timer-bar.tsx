@@ -3,6 +3,8 @@
 import { useRef, useState } from "react"
 import { formatSeconds, useTimer } from "./timer-context"
 import { TaskModal } from "../task-modal"
+import { fetchTask } from "@/lib/actions/tasks"
+import { useTaskStore } from "@/lib/stores/task-store"
 
 function parseDisplayTime(input: string): number | null {
   const parts = input.trim().split(":").map((s) => parseInt(s, 10))
@@ -62,7 +64,13 @@ export function TimerBar() {
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <span className="text-base">{isPomodoro ? "🍅" : "⏱"}</span>
           <button
-            onClick={() => setModalOpen(true)}
+            onClick={async () => {
+              if (state.taskId && !useTaskStore.getState().tasks.find((t) => t.id === state.taskId)) {
+                const task = await fetchTask(state.taskId)
+                if (task) useTaskStore.getState().addTask(task)
+              }
+              setModalOpen(true)
+            }}
             className="text-sm text-gray-600 truncate hover:text-gray-900 transition-colors cursor-pointer"
           >
             {state.taskTitle}
