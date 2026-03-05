@@ -75,6 +75,7 @@ type Action =
   | { type: "TICK" }
   | { type: "RESET" }
   | { type: "SET_TYPE"; timerType: TimerType }
+  | { type: "ADJUST"; newStartTime: Date; newSeconds: number }
   | { type: "SET_TIMEOUT_NOTIFICATION"; taskTitle: string }
   | { type: "DISMISS_NOTIFICATION" }
 
@@ -131,6 +132,8 @@ function reducer(state: TimerState, action: Action): TimerState {
         type: action.timerType,
         seconds: action.timerType === "pomodoro" ? state.workDuration : 0,
       }
+    case "ADJUST":
+      return { ...state, startTime: action.newStartTime, seconds: action.newSeconds }
     case "SET_TIMEOUT_NOTIFICATION":
       return { ...initState(state.workDuration), timedOutTask: action.taskTitle }
     case "DISMISS_NOTIFICATION":
@@ -158,6 +161,7 @@ interface TimerContextValue {
   resume: () => void
   stop: () => Promise<void>
   setType: (type: TimerType) => void
+  adjust: (newSeconds: number) => void
   dismissNotification: () => void
 }
 
@@ -301,8 +305,21 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
     []
   )
 
+  const adjust = useCallback((newSeconds: number) => {
+    const s = stateRef.current
+    if (!s.startTime || s.status === "idle") return
+    // Use pausedAt as reference when paused so the offset stays correct on resume
+    const ref = s.pausedAt ?? new Date()
+    const newStartTime =
+      s.type === "stopwatch"
+        ? new Date(ref.getTime() - newSeconds * 1000)
+        : new Date(ref.getTime() - (s.workDuration - newSeconds) * 1000)
+    dispatch({ type: "ADJUST", newStartTime, newSeconds })
+    updatePersistedTimer({ startTime: newStartTime.toISOString() })
+  }, [])
+
   return (
-    <TimerContext.Provider value={{ state, start, pause, resume, stop, setType, dismissNotification }}>
+    <TimerContext.Provider value={{ state, start, pause, resume, stop, setType, adjust, dismissNotification }}>
       {children}
     </TimerContext.Provider>
   )

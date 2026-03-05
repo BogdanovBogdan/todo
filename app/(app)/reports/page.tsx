@@ -6,6 +6,7 @@ import { and, eq, gte, inArray, lt, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
+import { EditableTaskDuration } from "./_components/editable-task-duration"
 
 type Period = "week" | "last-week" | "month"
 
@@ -104,6 +105,7 @@ export default async function ReportsPage({
 
   const logs = await db
     .select({
+      id: timeLogs.id,
       startTime: timeLogs.startTime,
       duration: timeLogs.duration,
       taskId: tasks.id,
@@ -152,7 +154,7 @@ export default async function ReportsPage({
   }
 
   // ── Aggregate by local day & task ────────────────────────────────────────────
-  type TaskRow = { taskTitle: string; duration: number; completed: boolean }
+  type TaskRow = { taskTitle: string; duration: number; completed: boolean; logIds: string[] }
   type DayData = { total: number; tasks: Map<string, TaskRow> }
 
   const allDayStrs = eachLocalDay(startStr, endStr)
@@ -169,11 +171,13 @@ export default async function ReportsPage({
     const existing = day.tasks.get(log.taskId)
     if (existing) {
       existing.duration += log.duration
+      existing.logIds.push(log.id)
     } else {
       day.tasks.set(log.taskId, {
         taskTitle: log.taskTitle,
         duration: log.duration,
         completed: log.completed,
+        logIds: [log.id],
       })
     }
   }
@@ -351,9 +355,10 @@ export default async function ReportsPage({
                           <span className="text-sm text-gray-800 truncate flex-1 min-w-0">
                             {task.taskTitle}
                           </span>
-                          <span className="text-sm font-mono text-gray-600 tabular-nums flex-shrink-0">
-                            {formatDuration(task.duration)}
-                          </span>
+                          <EditableTaskDuration
+                            logIds={task.logIds}
+                            initialDuration={task.duration}
+                          />
                         </div>
                         {/* Estimate indicator row */}
                         {estimated !== null && (

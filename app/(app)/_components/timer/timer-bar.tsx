@@ -1,9 +1,21 @@
 "use client"
 
+import { useRef, useState } from "react"
 import { formatSeconds, useTimer } from "./timer-context"
 
+function parseDisplayTime(input: string): number | null {
+  const parts = input.trim().split(":").map((s) => parseInt(s, 10))
+  if (parts.some(isNaN)) return null
+  if (parts.length === 2) return parts[0] * 60 + parts[1]
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+  return null
+}
+
 export function TimerBar() {
-  const { state, pause, resume, stop, setType } = useTimer()
+  const { state, pause, resume, stop, setType, adjust } = useTimer()
+  const [editing, setEditing] = useState(false)
+  const [editValue, setEditValue] = useState("")
+  const inputRef = useRef<HTMLInputElement>(null)
 
   if (state.status === "idle") return null
 
@@ -12,6 +24,23 @@ export function TimerBar() {
   const progress = isPomodoro
     ? (state.workDuration - state.seconds) / state.workDuration
     : 0
+
+  function startEdit() {
+    setEditValue(formatSeconds(state.seconds))
+    setEditing(true)
+    setTimeout(() => {
+      inputRef.current?.select()
+    }, 0)
+  }
+
+  function commitEdit() {
+    const parsed = parseDisplayTime(editValue)
+    if (parsed !== null && parsed >= 0) {
+      const clamped = isPomodoro ? Math.min(parsed, state.workDuration) : parsed
+      adjust(clamped)
+    }
+    setEditing(false)
+  }
 
   return (
     <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-50">
@@ -34,14 +63,30 @@ export function TimerBar() {
           </span>
         </div>
 
-        {/* Timer display */}
-        <span
-          className={`text-xl md:text-2xl font-mono font-semibold tabular-nums mx-3 md:mx-8 ${
-            isRunning ? "text-gray-900" : "text-gray-400"
-          }`}
-        >
-          {formatSeconds(state.seconds)}
-        </span>
+        {/* Timer display — click to edit */}
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={commitEdit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commitEdit()
+              if (e.key === "Escape") setEditing(false)
+            }}
+            className="text-xl md:text-2xl font-mono font-semibold tabular-nums mx-3 md:mx-8 w-24 bg-transparent outline-none border-b-2 border-gray-400 text-center text-gray-900"
+          />
+        ) : (
+          <button
+            onClick={startEdit}
+            title="Click to edit"
+            className={`text-xl md:text-2xl font-mono font-semibold tabular-nums mx-3 md:mx-8 cursor-text hover:opacity-60 transition-opacity ${
+              isRunning ? "text-gray-900" : "text-gray-400"
+            }`}
+          >
+            {formatSeconds(state.seconds)}
+          </button>
+        )}
 
         {/* Controls */}
         <div className="flex items-center gap-2 flex-1 justify-end">
