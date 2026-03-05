@@ -1,7 +1,7 @@
 "use client"
 
 import { updateAggregatedDuration } from "@/lib/actions/time-logs"
-import { useRef, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
@@ -31,6 +31,13 @@ export function EditableTaskDuration({ logIds, initialDuration }: Props) {
   const [duration, setDuration] = useState(initialDuration)
   const [isPending, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!editing) {
+      setDuration(initialDuration)
+      setValue(formatDuration(initialDuration))
+    }
+  }, [initialDuration]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function startEdit() {
     setValue(formatDuration(duration))
