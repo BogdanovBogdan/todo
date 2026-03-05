@@ -20,9 +20,7 @@ function TodayColumnsInner({ todayStr, showCompleted, completedTotalCount }: Pro
   const overdueTasks = tasks.filter((t) => t.dueDate != null && t.dueDate < todayStr)
   const todayTasks = tasks.filter((t) => t.dueDate === todayStr)
 
-  const visibleOverdue = showCompleted
-    ? overdueTasks
-    : overdueTasks.filter((t) => !t.completed)
+  const visibleOverdue = overdueTasks.filter((t) => !t.completed)
 
   const visibleToday = showCompleted
     ? todayTasks

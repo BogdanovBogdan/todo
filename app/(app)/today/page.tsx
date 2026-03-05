@@ -37,9 +37,7 @@ export default async function TodayPage({
     orderBy: [desc(tasks.createdAt)],
   })
 
-  const completedCount = [...overdueTasks, ...todayTasks].filter(
-    (t) => t.completed
-  ).length
+  const completedCount = todayTasks.filter((t) => t.completed).length
 
   return (
     <>
