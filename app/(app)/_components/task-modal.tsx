@@ -161,7 +161,6 @@ export function TaskModal({ taskId, onClose }: Props) {
           setTitleValue(task?.title ?? "")
           setEditingTitle(false)
         } else if (editingDesc) {
-          setDescValue(task?.description ?? "")
           setEditingDesc(false)
         } else {
           onClose()
@@ -170,7 +169,7 @@ export function TaskModal({ taskId, onClose }: Props) {
     }
     document.addEventListener("keydown", onKeyDown)
     return () => document.removeEventListener("keydown", onKeyDown)
-  }, [editingTitle, editingDesc, task?.title, task?.description, onClose])
+  }, [editingTitle, editingDesc, task?.title, onClose])
 
   if (!task) {
     onClose()
@@ -376,8 +375,7 @@ export function TaskModal({ taskId, onClose }: Props) {
             onBlur={commitDesc}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
-                setDescValue(task.description ?? "")
-                setEditingDesc(false)
+                commitDesc()
               }
             }}
             placeholder="Add description..."
@@ -387,7 +385,7 @@ export function TaskModal({ taskId, onClose }: Props) {
         ) : (
           <p
             onClick={() => !task.completed && setEditingDesc(true)}
-            className={`text-sm min-h-[60px] ${
+            className={`text-sm min-h-[60px] whitespace-pre-wrap ${
               task.completed
                 ? "text-gray-400 cursor-default"
                 : descValue
