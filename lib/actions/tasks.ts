@@ -3,7 +3,7 @@
 import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks } from "@/db/schema"
-import { and, eq, lt } from "drizzle-orm"
+import { and, eq, lt, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { parseEstimate } from "@/lib/utils/time"
 
@@ -50,7 +50,7 @@ export async function createTask(formData: FormData) {
   revalidateTasks()
 }
 
-export async function toggleTask(id: string, completed: boolean) {
+export async function toggleTask(id: string, completed: boolean, todayStr?: string) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
@@ -60,6 +60,12 @@ export async function toggleTask(id: string, completed: boolean) {
       completed,
       completedAt: completed ? new Date() : null,
       updatedAt: new Date(),
+      // If completing an overdue task, move its dueDate to today
+      ...(completed && todayStr
+        ? {
+            dueDate: sql`CASE WHEN ${tasks.dueDate} IS NOT NULL AND ${tasks.dueDate} < ${todayStr} THEN ${todayStr} ELSE ${tasks.dueDate} END`,
+          }
+        : {}),
     })
     .where(and(eq(tasks.id, id), eq(tasks.userId, session.user.id)))
 

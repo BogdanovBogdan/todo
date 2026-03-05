@@ -19,8 +19,16 @@ export const useTaskStore = create<TaskStore>((set) => ({
   setTasks: (tasks) => set({ tasks }),
   addTask: (task) => set((s) => ({ tasks: [task, ...s.tasks] })),
   toggleTask: (id, completed) => {
-    set((s) => ({ tasks: s.tasks.map((t) => t.id === id ? { ...t, completed } : t) }))
-    actions.toggleTask(id, completed)
+    const todayStr = new Intl.DateTimeFormat("en-CA").format(new Date())
+    set((s) => ({
+      tasks: s.tasks.map((t) => {
+        if (t.id !== id) return t
+        const dueDate =
+          completed && t.dueDate && t.dueDate < todayStr ? todayStr : t.dueDate
+        return { ...t, completed, dueDate }
+      }),
+    }))
+    actions.toggleTask(id, completed, completed ? todayStr : undefined)
   },
   updateTitle: (id, title) => {
     set((s) => ({ tasks: s.tasks.map((t) => t.id === id ? { ...t, title } : t) }))
