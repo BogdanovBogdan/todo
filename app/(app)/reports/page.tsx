@@ -2,7 +2,7 @@ import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks, timeLogs } from "@/db/schema"
 import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
-import { and, eq, gte, inArray, lt, sql } from "drizzle-orm"
+import { and, eq, gte, inArray, isNotNull, lt, lte, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
@@ -123,8 +123,33 @@ export default async function ReportsPage({
       )
     )
 
+  // ── Completed tasks with no time logs in this period (grouped by dueDate) ────
+  const completedByDueDate = await db
+    .select({
+      id: tasks.id,
+      title: tasks.title,
+      dueDate: tasks.dueDate,
+      estimatedDuration: tasks.estimatedDuration,
+    })
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.userId, session!.user!.id!),
+        eq(tasks.completed, true),
+        isNotNull(tasks.dueDate),
+        gte(tasks.dueDate, startStr),
+        lte(tasks.dueDate, endStr)
+      )
+    )
+
   // ── All-time tracked + estimated per task ────────────────────────────────────
-  const taskIds = [...new Set(logs.map((l) => l.taskId))]
+  const logTaskIds = new Set(logs.map((l) => l.taskId))
+  const taskIds = [
+    ...new Set([
+      ...logs.map((l) => l.taskId),
+      ...completedByDueDate.map((t) => t.id),
+    ]),
+  ]
 
   type AllTimeRow = { totalTracked: number; estimatedDuration: number | null }
   const allTimeByTask = new Map<string, AllTimeRow>()
@@ -183,6 +208,21 @@ export default async function ReportsPage({
     }
   }
 
+  // Add completed tasks without time logs, keyed by dueDate
+  for (const task of completedByDueDate) {
+    if (!task.dueDate || logTaskIds.has(task.id)) continue
+    const day = dayMap.get(task.dueDate)
+    if (!day) continue
+    if (!day.tasks.has(task.id)) {
+      day.tasks.set(task.id, {
+        taskTitle: task.title,
+        duration: 0,
+        completed: true,
+        logIds: [],
+      })
+    }
+  }
+
   const chartDays = allDayStrs.map((key) => ({
     key,
     total: dayMap.get(key)?.total ?? 0,
@@ -191,7 +231,7 @@ export default async function ReportsPage({
   const maxTotal = Math.max(...chartDays.map((d) => d.total), 1)
   const periodTotal = chartDays.reduce((s, d) => s + d.total, 0)
   const daysWithData = chartDays
-    .filter((d) => d.total > 0)
+    .filter((d) => d.total > 0 || (dayMap.get(d.key)?.tasks.size ?? 0) > 0)
     .sort((a, b) => (b.key > a.key ? 1 : -1))
 
   return (
@@ -300,7 +340,7 @@ export default async function ReportsPage({
               return {
                 title: task.taskTitle,
                 completed: isDone,
-                trackedFormatted: formatDuration(task.duration),
+                trackedFormatted: task.logIds.length > 0 ? formatDuration(task.duration) : "—",
                 estimatedFormatted: estimated
                   ? formatDuration(estimated)
                   : null,
@@ -354,10 +394,14 @@ export default async function ReportsPage({
                             {isDone ? "✅" : "❌"}
                           </span>
                           <TaskTitleButton taskId={taskId} taskTitle={task.taskTitle} />
-                          <EditableTaskDuration
-                            logIds={task.logIds}
-                            initialDuration={task.duration}
-                          />
+                          {task.logIds.length > 0 ? (
+                            <EditableTaskDuration
+                              logIds={task.logIds}
+                              initialDuration={task.duration}
+                            />
+                          ) : (
+                            <span className="text-sm font-mono text-gray-300">—</span>
+                          )}
                         </div>
                         {/* Estimate indicator row */}
                         {estimated !== null && (
