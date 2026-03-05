@@ -60,6 +60,18 @@ export async function getTaskTrackedTime(taskId: string): Promise<number> {
   return Number(result[0]?.total ?? 0)
 }
 
+export async function deleteTimeLogs(logIds: string[]) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+  if (logIds.length === 0) return
+
+  await db
+    .delete(timeLogs)
+    .where(and(inArray(timeLogs.id, logIds), eq(timeLogs.userId, session.user.id)))
+
+  revalidatePath("/", "layout")
+}
+
 export async function saveTimeLog(data: {
   taskId: string
   startTime: Date

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Trash2 } from "lucide-react"
 import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
@@ -91,6 +92,18 @@ export function TaskItem({ taskId }: { taskId: string }) {
               )}
             </div>
           </div>
+
+          {/* Delete button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              useTaskStore.getState().deleteTask(task.id)
+            }}
+            aria-label="Delete task"
+            className="flex-shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-full transition-all cursor-pointer opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50"
+          >
+            <Trash2 size={14} />
+          </button>
 
           {/* Timer button */}
           {!task.completed && (

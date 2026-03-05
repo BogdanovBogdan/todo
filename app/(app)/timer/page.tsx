@@ -7,6 +7,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { EditableDuration } from "./_components/editable-duration"
 import { LogActions } from "./_components/log-actions"
+import { DeleteLogButton } from "./_components/delete-log-button"
 import { TaskTitleButton } from "../_components/task-title-button"
 
 const DAYS_PER_PAGE = 3
@@ -177,6 +178,7 @@ export default async function TimerPage({
                   </span>
 
                   <EditableDuration logId={log.id} initialDuration={log.duration} />
+                  <DeleteLogButton logId={log.id} />
                 </div>
               ))}
             </div>

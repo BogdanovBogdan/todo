@@ -7,6 +7,7 @@ import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
 import { EditableTaskDuration } from "./_components/editable-task-duration"
+import { DeleteTimeLogsButton } from "./_components/delete-time-logs-button"
 import { TaskTitleButton } from "../_components/task-title-button"
 
 type Period = "week" | "last-week" | "month"
@@ -387,7 +388,7 @@ export default async function ReportsPage({
                         : task.completed
 
                     return (
-                      <div key={taskId} className="px-4 py-3">
+                      <div key={taskId} className="group px-4 py-3">
                         {/* Title row */}
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="text-base leading-none flex-shrink-0">
@@ -402,6 +403,10 @@ export default async function ReportsPage({
                           ) : (
                             <span className="text-sm font-mono text-gray-300">—</span>
                           )}
+                          <DeleteTimeLogsButton
+                            logIds={task.logIds}
+                            taskId={task.logIds.length === 0 ? taskId : undefined}
+                          />
                         </div>
                         {/* Estimate indicator row */}
                         {estimated !== null && (
