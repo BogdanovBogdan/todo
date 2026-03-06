@@ -357,7 +357,7 @@ export default async function ReportsPage({
                   </span>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <CopyDayButton
-                      dayLabel={dayLabel}
+                      dateKey={key}
                       totalFormatted={totalFormatted}
                       tasks={copyTasks}
                     />

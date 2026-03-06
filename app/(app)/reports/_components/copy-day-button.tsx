@@ -10,22 +10,23 @@ export interface DayTaskEntry {
 }
 
 interface Props {
-  dayLabel: string
+  dateKey: string // YYYY-MM-DD
   totalFormatted: string
   tasks: DayTaskEntry[]
 }
 
-export function CopyDayButton({ dayLabel, totalFormatted, tasks }: Props) {
+export function CopyDayButton({ dateKey, totalFormatted, tasks }: Props) {
   const [copied, setCopied] = useState(false)
 
   function handleCopy() {
-    const lines: string[] = [`📅 ${dayLabel} — ${totalFormatted}`, ""]
+    const [, mm, dd] = dateKey.split("-")
+    const dateFormatted = `${dd}.${mm}`
+    const lines: string[] = [`📅 ${dateFormatted} | ⏳ ${totalFormatted}`, ""]
     for (const t of tasks) {
       const status = t.completed ? "✅" : "❌"
-      const estimate = t.estimatedFormatted
-        ? ` (est: ${t.estimatedFormatted})`
-        : ""
-      lines.push(`${status} ${t.title} — ${t.trackedFormatted}${estimate}`)
+      const estimatePart = t.estimatedFormatted ? ` (est: ${t.estimatedFormatted})` : ""
+      const timePart = t.trackedFormatted !== "—" ? ` | ⏳ ${t.trackedFormatted}${estimatePart}` : ""
+      lines.push(`• ${t.title}${timePart} ${status}`)
     }
     navigator.clipboard.writeText(lines.join("\n"))
     setCopied(true)
