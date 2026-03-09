@@ -2,13 +2,14 @@ import { auth } from "@/auth"
 import { db } from "@/db"
 import { tasks, timeLogs } from "@/db/schema"
 import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
-import { and, eq, gte, inArray, isNotNull, lt, lte, sql } from "drizzle-orm"
+import { and, asc, eq, gte, inArray, isNotNull, lt, lte, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 import Link from "next/link"
 import { CopyDayButton } from "./_components/copy-day-button"
 import { EditableTaskDuration } from "./_components/editable-task-duration"
 import { DeleteTimeLogsButton } from "./_components/delete-time-logs-button"
 import { TaskTitleButton } from "../_components/task-title-button"
+import { AddTimeLogButton } from "./_components/add-time-log-button"
 
 type Period = "week" | "last-week" | "month"
 
@@ -104,6 +105,12 @@ export default async function ReportsPage({
 
   const { start, end, startStr, endStr } = getPeriodRange(period, tz, todayStr)
   const session = await auth()
+
+  const allTasks = await db
+    .select({ id: tasks.id, title: tasks.title })
+    .from(tasks)
+    .where(eq(tasks.userId, session!.user!.id!))
+    .orderBy(asc(tasks.title))
 
   const logs = await db
     .select({
@@ -240,6 +247,7 @@ export default async function ReportsPage({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Reports</h1>
+        <AddTimeLogButton tasks={allTasks} todayStr={todayStr} />
 
         <div className="flex rounded-lg border border-gray-200 overflow-hidden text-sm">
           {(["week", "last-week", "month"] as Period[]).map((p, i) => (
