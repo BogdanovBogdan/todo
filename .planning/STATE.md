@@ -83,6 +83,7 @@ None.
 |---|-------------|------|--------|-----------|
 | 1 | Filter modal task dropdown to active tasks only | 2026-03-09 | 8e92dba | [1-filter-modal-task-dropdown-to-active-tas](.planning/quick/1-filter-modal-task-dropdown-to-active-tas/) |
 | 2 | UI fixes for Add Entry modal: cursor, contrast, backdrop click, duration label | 2026-03-10 | 2a9415e | [2-ui-fixes-for-add-entry-modal-cursor-poin](.planning/quick/2-ui-fixes-for-add-entry-modal-cursor-poin/) |
+| 3 | Fix modal backdrop close + replace duration with numeric h/min inputs | 2026-03-09 | 746fd00 | [3-fix-modal-backdrop-close-and-replace-dur](.planning/quick/3-fix-modal-backdrop-close-and-replace-dur/) |
 
 ## Session Continuity
 
