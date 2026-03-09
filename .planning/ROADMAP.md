@@ -34,4 +34,4 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Manual Log Entry | 0/2 | Not started | - |
+| 1. Manual Log Entry | 1/2 | In Progress|  |

@@ -8,10 +8,10 @@
 ### Manual Log Entry
 
 - [ ] **LOG-01**: User can open a "Add entry" form from the Reports page
-- [ ] **LOG-02**: User can select an existing task when creating a manual log entry
-- [ ] **LOG-03**: User can set a start date and time for the manual log entry
-- [ ] **LOG-04**: User can optionally set a duration (hh:mm) for the manual entry
-- [ ] **LOG-05**: Manual log entry is saved with type "stopwatch" and appears in Reports
+- [x] **LOG-02**: User can select an existing task when creating a manual log entry
+- [x] **LOG-03**: User can set a start date and time for the manual log entry
+- [x] **LOG-04**: User can optionally set a duration (hh:mm) for the manual entry
+- [x] **LOG-05**: Manual log entry is saved with type "stopwatch" and appears in Reports
 
 ## v2 Requirements
 
@@ -33,10 +33,10 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | LOG-01 | Phase 1 | Pending |
-| LOG-02 | Phase 1 | Pending |
-| LOG-03 | Phase 1 | Pending |
-| LOG-04 | Phase 1 | Pending |
-| LOG-05 | Phase 1 | Pending |
+| LOG-02 | Phase 1 | Complete |
+| LOG-03 | Phase 1 | Complete |
+| LOG-04 | Phase 1 | Complete |
+| LOG-05 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 5 total
