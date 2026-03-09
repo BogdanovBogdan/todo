@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react"
 import { saveTimeLog } from "@/lib/actions/time-logs"
 import { DatePicker } from "@/app/(app)/_components/date-picker"
-import { parseEstimate } from "@/lib/utils/time"
 import { dateStrToLocal } from "@/lib/utils/tz"
 
 interface Task {
@@ -22,7 +21,8 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
   const [query, setQuery] = useState("")
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [dateStr, setDateStr] = useState(todayStr)
-  const [durationStr, setDurationStr] = useState("")
+  const [hours, setHours] = useState("")
+  const [minutes, setMinutes] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -58,15 +58,9 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
       return
     }
 
-    let durationSeconds = 0
-    if (durationStr.trim() !== "") {
-      const parsed = parseEstimate(durationStr)
-      if (parsed === null) {
-        setError("Duration must be h:mm format, e.g. 1:30")
-        return
-      }
-      durationSeconds = parsed
-    }
+    const h = hours === "" ? 0 : parseInt(hours, 10)
+    const m = minutes === "" ? 0 : parseInt(minutes, 10)
+    const durationSeconds = h * 3600 + m * 60
 
     setError(null)
     const startTime = dateStrToLocal(dateStr)
@@ -84,9 +78,10 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/40 z-40" />
       <div
         className="fixed inset-0 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
       >
         <div
           className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative"
@@ -152,16 +147,28 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Duration (optional)
             </label>
-            <input
-              type="text"
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 text-gray-900"
-              placeholder="h:mm"
-              value={durationStr}
-              onChange={(e) => setDurationStr(e.target.value)}
-            />
-            {error === "Duration must be h:mm format, e.g. 1:30" && (
-              <p className="text-sm text-red-500 mt-1">{error}</p>
-            )}
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                max={23}
+                className="w-20 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 text-gray-900"
+                placeholder="0"
+                value={hours}
+                onChange={(e) => setHours(e.target.value)}
+              />
+              <span className="text-sm text-gray-500">h</span>
+              <input
+                type="number"
+                min={0}
+                max={59}
+                className="w-20 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 text-gray-900"
+                placeholder="0"
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+              />
+              <span className="text-sm text-gray-500">min</span>
+            </div>
           </div>
 
           {/* Submit */}
