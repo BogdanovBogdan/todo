@@ -24,10 +24,14 @@ This milestone adds manual time log entry to the Reports page. All 5 requirement
   3. User can set a start date and time for the entry
   4. User can leave duration blank and still save the entry successfully
   5. After saving, the new entry appears in the Reports view under the correct date, saved as type "stopwatch"
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Fix saveTimeLog action + create AddTimeLogModal Client Component
+- [ ] 01-02-PLAN.md — Create AddTimeLogButton island + wire into Reports page + human verify
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Manual Log Entry | 0/? | Not started | - |
+| 1. Manual Log Entry | 0/2 | Not started | - |
