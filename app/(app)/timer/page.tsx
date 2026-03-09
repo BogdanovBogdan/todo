@@ -61,14 +61,6 @@ export default async function TimerPage({
     new Date(ty, tm - 1, td - 1)
   )
 
-  // Week start (Monday)
-  const todayDate = new Date(ty, tm - 1, td)
-  const dow = todayDate.getDay()
-  const mondayOffset = (dow + 6) % 7
-  const weekStartDate = new Date(ty, tm - 1, td - mondayOffset)
-  const weekStartStr = new Intl.DateTimeFormat("en-CA").format(weekStartDate)
-  const weekStartUTC = getDayBoundsUTC(weekStartStr, tz).start
-
   const logs = await db
     .select({
       id: timeLogs.id,
@@ -104,38 +96,9 @@ export default async function TimerPage({
   const visibleDays = allDays.slice(0, daysToShow)
   const hasMore = allDays.length > daysToShow
 
-  // Header stats
-  const todayTotal = logs
-    .filter((l) => toLocalDateStr(l.startTime, tz) === todayStr)
-    .reduce((sum, l) => sum + l.duration, 0)
-
-  const weekTotal = logs
-    .filter((l) => l.startTime >= weekStartUTC)
-    .reduce((sum, l) => sum + l.duration, 0)
-
   return (
     <div className="max-w-2xl w-full min-w-0">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Timer</h1>
-
-      {/* Stats */}
-      <div className="flex items-center gap-8 mb-8 pb-6 border-b border-gray-100">
-        <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            Today
-          </p>
-          <p className="text-2xl font-mono font-semibold text-gray-900">
-            {formatDuration(todayTotal)}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">
-            This week
-          </p>
-          <p className="text-2xl font-mono font-semibold text-gray-900">
-            {formatDuration(weekTotal)}
-          </p>
-        </div>
-      </div>
 
       {/* Empty state */}
       {logs.length === 0 && (
