@@ -87,15 +87,17 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
       <div
         className="fixed inset-0 flex items-center justify-center z-50 p-4"
-        onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+        <div
+          className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative"
+          onClick={(e) => e.stopPropagation()}
+        >
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Add report item entry
           </h2>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer"
           >
             ✕
           </button>
@@ -108,7 +110,7 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
             <div className="relative">
               <input
                 type="text"
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400"
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 text-gray-900"
                 placeholder="Search tasks..."
                 value={selectedTask ? selectedTask.title : query}
                 onChange={handleTaskInputChange}
@@ -148,12 +150,12 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
           {/* Field 3: Duration */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Duration
+              Duration (optional)
             </label>
             <input
               type="text"
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400"
-              placeholder="h:mm (optional)"
+              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-gray-400 text-gray-900"
+              placeholder="h:mm"
               value={durationStr}
               onChange={(e) => setDurationStr(e.target.value)}
             />
@@ -167,7 +169,7 @@ export function AddTimeLogModal({ tasks, todayStr, onClose }: AddTimeLogModalPro
             <button
               onClick={handleSubmit}
               disabled={isPending}
-              className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-700 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? "Saving..." : "Save"}
             </button>
