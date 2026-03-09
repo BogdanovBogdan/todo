@@ -1,0 +1,33 @@
+# Roadmap: Todo — Manual Time Log Entry (v1.0)
+
+## Overview
+
+This milestone adds manual time log entry to the Reports page. All 5 requirements form a single coherent deliverable: a form that lets the user pick a task, set a start date/time, optionally enter a duration, and save the entry as a stopwatch log.
+
+## Milestones
+
+- 🚧 **v1.0 Manual time log entry** - Phase 1 (in progress)
+
+## Phases
+
+- [ ] **Phase 1: Manual Log Entry** - User can manually add a time log entry from the Reports page
+
+## Phase Details
+
+### Phase 1: Manual Log Entry
+**Goal**: User can open a form on the Reports page, fill in task, start time, and optional duration, and save a new time log entry that appears in the report
+**Depends on**: Nothing (first phase)
+**Requirements**: LOG-01, LOG-02, LOG-03, LOG-04, LOG-05
+**Success Criteria** (what must be TRUE):
+  1. User can open an "Add entry" form directly from the Reports page
+  2. User can select any existing task from a dropdown when creating the entry
+  3. User can set a start date and time for the entry
+  4. User can leave duration blank and still save the entry successfully
+  5. After saving, the new entry appears in the Reports view under the correct date, saved as type "stopwatch"
+**Plans**: TBD
+
+## Progress
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Manual Log Entry | 0/? | Not started | - |
