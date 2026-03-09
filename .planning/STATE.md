@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Manual time log entry
 status: planning
-stopped_at: Completed 01-manual-log-entry-01-PLAN.md
-last_updated: "2026-03-09T17:00:13.655Z"
+stopped_at: "Checkpoint: 01-02 Task 3 human-verify awaiting user approval"
+last_updated: "2026-03-09T17:02:57.851Z"
 last_activity: 2026-03-09 — Roadmap created, Phase 1 ready to plan
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-manual-log-entry P01 | 20min | 2 tasks | 2 files |
+| Phase 01-manual-log-entry P02 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Recent decisions affecting current work:
 - [Phase 01-manual-log-entry]: Duration guard changed from < 1 to < 0 to allow zero-duration manual entries
 - [Phase 01-manual-log-entry]: DatePicker reused as-is — renders as a button/calendar picker for the Add Log form
 - [Phase 01-manual-log-entry]: All manual log entries use type=stopwatch per project convention
+- [Phase 01-manual-log-entry]: Button label is '+ Add entry' with no icon (text-only per locked plan decision)
+- [Phase 01-manual-log-entry]: allTasks fetched with asc ordering by title for consistent alphabetical display in combobox
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-09T17:00:13.653Z
-Stopped at: Completed 01-manual-log-entry-01-PLAN.md
+Last session: 2026-03-09T17:02:57.850Z
+Stopped at: Checkpoint: 01-02 Task 3 human-verify awaiting user approval
 Resume file: None

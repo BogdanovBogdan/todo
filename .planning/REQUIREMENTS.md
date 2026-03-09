@@ -7,7 +7,7 @@
 
 ### Manual Log Entry
 
-- [ ] **LOG-01**: User can open a "Add entry" form from the Reports page
+- [x] **LOG-01**: User can open a "Add entry" form from the Reports page
 - [x] **LOG-02**: User can select an existing task when creating a manual log entry
 - [x] **LOG-03**: User can set a start date and time for the manual log entry
 - [x] **LOG-04**: User can optionally set a duration (hh:mm) for the manual entry
@@ -32,7 +32,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LOG-01 | Phase 1 | Pending |
+| LOG-01 | Phase 1 | Complete |
 | LOG-02 | Phase 1 | Complete |
 | LOG-03 | Phase 1 | Complete |
 | LOG-04 | Phase 1 | Complete |
