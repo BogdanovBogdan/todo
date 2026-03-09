@@ -80,7 +80,7 @@ export async function saveTimeLog(data: {
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
-  if (data.duration < 1) return
+  if (data.duration < 0) return
 
   await db.insert(timeLogs).values({
     taskId: data.taskId,
@@ -89,4 +89,6 @@ export async function saveTimeLog(data: {
     duration: data.duration,
     type: data.type,
   })
+
+  revalidatePath("/", "layout")
 }
