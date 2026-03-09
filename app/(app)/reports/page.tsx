@@ -109,7 +109,7 @@ export default async function ReportsPage({
   const allTasks = await db
     .select({ id: tasks.id, title: tasks.title })
     .from(tasks)
-    .where(eq(tasks.userId, session!.user!.id!))
+    .where(and(eq(tasks.userId, session!.user!.id!), eq(tasks.completed, false)))
     .orderBy(asc(tasks.title))
 
   const logs = await db
