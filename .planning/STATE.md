@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-09)
 Phase: 1 of 1 (Manual Log Entry)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-03-09 — Roadmap created, Phase 1 ready to plan
+Last activity: 2026-03-09 — Completed quick task 1: filter modal task dropdown to active tasks only
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -76,6 +76,12 @@ None yet.
 ### Blockers/Concerns
 
 None.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Filter modal task dropdown to active tasks only | 2026-03-09 | 8e92dba | [1-filter-modal-task-dropdown-to-active-tas](.planning/quick/1-filter-modal-task-dropdown-to-active-tas/) |
 
 ## Session Continuity
 
