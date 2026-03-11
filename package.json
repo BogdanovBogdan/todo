@@ -13,7 +13,7 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.1",
+    "@auth/drizzle-adapter": "1.11.0",
     "agentation": "^2.2.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.45.1",
