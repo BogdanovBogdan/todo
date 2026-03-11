@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Personal task management app with built-in time tracking (Pomodoro + Stopwatch). Users manage tasks across Today/Inbox views, track time against tasks, and review time logs in Reports. Built for solo use with Google OAuth authentication.
+Personal task management app with built-in time tracking (Pomodoro + Stopwatch). Users manage tasks across Today/Inbox views, track time against tasks, and review time logs in Reports — including manual log entry. Built for solo use with Google OAuth authentication.
 
 ## Core Value
 
@@ -11,8 +11,6 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 ## Requirements
 
 ### Validated
-
-<!-- Shipped and confirmed valuable — inferred from existing codebase -->
 
 - ✓ User can create, complete, and delete tasks with due dates and time estimates
 - ✓ User can view tasks in Today (due today + overdue) and Inbox (all tasks) views
@@ -23,15 +21,13 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 - ✓ User can view time reports grouped by period (week/month) on the Reports page
 - ✓ User can copy daily summary to clipboard from Reports
 - ✓ Timezone-aware date handling — dates computed from user's local timezone
+- ✓ User can manually add a time log entry from the Reports page — v1.0
+- ✓ Manual entry supports task selection (active tasks), start date, optional duration — v1.0
+- ✓ Manually added entries saved as type "stopwatch" and appear in Reports — v1.0
 
 ### Active
 
-<!-- Current milestone scope -->
-
-- [ ] User can manually add a time log entry from the Reports page
-- [ ] Manual entry requires: task selection (existing tasks), start date/time
-- [ ] Duration is optional when adding a manual entry
-- [ ] Manually added entries are saved as type "stopwatch"
+<!-- Next milestone scope — define with /gsd:new-milestone -->
 
 ### Out of Scope
 
@@ -41,11 +37,12 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 
 ## Context
 
-- Next.js 16 App Router, TypeScript strict, Tailwind v4, PostgreSQL + Drizzle ORM
+- Next.js 16 App Router, TypeScript strict, Tailwind v4, PostgreSQL + Drizzle ORM, ~4050 LOC
 - All mutations via Server Actions (`lib/actions/`), no REST layer for writes
 - Time logs stored in `timeLogs` table: `taskId`, `userId`, `startTime`, `duration` (seconds), `type`
-- Reports page (`app/(app)/reports/page.tsx`) already shows logs grouped by day/period
-- Existing `saveTimeLog` server action in `lib/actions/time-logs.ts` handles persistence
+- Reports page shows logs grouped by day/period with manual entry support
+- `AddTimeLogModal` uses combobox pattern (onMouseDown + onBlur setTimeout 200ms) for dropdown dismiss
+- `DurationPicker` popover for h:mm duration input (reimplemented from numeric inputs after quick task)
 
 ## Constraints
 
@@ -57,9 +54,11 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Manual log entry on Reports page | Natural home for log management; Timer is for active tracking | — Pending |
-| Duration optional | User may not know exact duration; can edit later | — Pending |
-| Fixed type = stopwatch | Manual entries are not pomodoro sessions | — Pending |
+| Manual log entry on Reports page | Natural home for log management; Timer is for active tracking | ✓ Good — confirmed right placement |
+| Duration optional | User may not know exact duration; can edit later | ✓ Good — zero-duration entries work correctly |
+| Fixed type = stopwatch | Manual entries are not pomodoro sessions | ✓ Good — consistent with existing type system |
+| DurationPicker popover over numeric inputs | Better UX, consistent with EstimatePicker pattern | ✓ Good — implemented in quick-4 |
+| Filter task dropdown to active tasks only | Prevent logging to completed tasks | ✓ Good — implemented in quick-1 |
 
 ---
-*Last updated: 2026-03-09 — Milestone v1.0 started (manual time log entry)*
+*Last updated: 2026-03-11 after v1.0 milestone*
