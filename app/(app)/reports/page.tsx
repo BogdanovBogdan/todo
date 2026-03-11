@@ -422,7 +422,7 @@ export default async function ReportsPage({
                             <span
                               className={`text-xs font-mono ${indicatorColor}`}
                             >
-                              {formatDuration(totalTracked)} /{" "}
+                              {formatDuration(task.duration)} /{" "}
                               {formatDuration(estimated)}
                             </span>
                           </div>
