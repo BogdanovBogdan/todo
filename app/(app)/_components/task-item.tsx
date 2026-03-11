@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2, Hourglass } from "lucide-react"
+import { Trash2, Hourglass, Play } from "lucide-react"
 import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
@@ -127,9 +127,7 @@ export function TaskItem({ taskId }: { taskId: string }) {
               {isTracking ? (
                 <span className="w-2.5 h-2.5 rounded-sm bg-red-500" />
               ) : (
-                <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 translate-x-px">
-                  <path d="M3 2.5l10 5.5-10 5.5V2.5z" />
-                </svg>
+                <Play size={14} />
               )}
             </button>
           )}
