@@ -3,7 +3,11 @@
 import { useState } from 'react';
 
 interface Props {
-  tasks: { title: string; estimatedDuration: number | null; completed: boolean }[];
+  tasks: {
+    title: string;
+    estimatedDuration: number | null;
+    completed: boolean;
+  }[];
   todayStr: string;
 }
 
@@ -23,11 +27,10 @@ export function CopyTasksButton({ tasks, todayStr }: Props) {
     const dateFormatted = `${dd}.${mm}`;
     const lines: string[] = [`📅 ${dateFormatted}`, ''];
     for (const t of tasks) {
-      const status = t.completed ? '✅' : '❌';
       const estimatePart = t.estimatedDuration
-        ? ` [est: ${formatDuration(t.estimatedDuration)}]`
+        ? ` | ⏳ --:-- (est: ${formatDuration(t.estimatedDuration)})`
         : '';
-      lines.push(`• ${t.title}${estimatePart} ${status}`);
+      lines.push(`• ${t.title}${estimatePart}`);
     }
     const text = lines.join('\n');
     await navigator.clipboard.writeText(text);
