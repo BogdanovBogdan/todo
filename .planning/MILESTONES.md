@@ -1,5 +1,19 @@
 # Milestones
 
+## v1.1 Day-scoped time in reports (Shipped: 2026-03-11)
+
+**Phases completed:** 1 phase, 1 plan
+**Files modified:** 1 (`app/(app)/reports/page.tsx` — 1 line changed)
+**Timeline:** 2026-03-11 (same day)
+
+**Key accomplishments:**
+- Fixed estimate indicator sub-row in Reports to show day-specific tracked time (`task.duration`) instead of all-time cumulative (`totalTracked`)
+- Color thresholds, isDone flag, and ✅/❌ icon intentionally left as all-time — correct split for planning vs completion tracking
+
+**Archive:** `.planning/milestones/v1.1-ROADMAP.md`
+
+---
+
 ## v1.0 Manual time log entry (Shipped: 2026-03-11)
 
 **Phases completed:** 1 phase, 2 plans

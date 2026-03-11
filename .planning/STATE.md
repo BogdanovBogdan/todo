@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: Day-scoped time in reports
 status: planning
 stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-11T11:41:42.953Z"
+last_updated: "2026-03-11T11:46:15.337Z"
 last_activity: 2026-03-11 — Roadmap created for v1.1
 progress:
   total_phases: 1

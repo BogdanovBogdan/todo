@@ -24,18 +24,18 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 - ✓ User can manually add a time log entry from the Reports page — v1.0
 - ✓ Manual entry supports task selection (active tasks), start date, optional duration — v1.0
 - ✓ Manually added entries saved as type "stopwatch" and appear in Reports — v1.0
+- ✓ Estimate indicator in Reports log item shows day-specific tracked time vs estimate — v1.1
 
 ### Active
 
-<!-- v1.1 scope -->
-
-- [ ] Estimate indicator in Reports log item shows day-specific tracked time, not all-time total
+<!-- Next milestone scope — define with /gsd:new-milestone -->
 
 ### Out of Scope
 
 - Free-text task name in manual log entry — only existing tasks, keeps data consistent
 - Manual entry on Timer page — Reports is the natural home for log management
 - Custom type selection for manual entries — stopwatch is appropriate default
+- Day-specific ✅/❌ completion status — all-time progress is the right basis for task completion — v1.1
 
 ## Context
 
@@ -61,13 +61,7 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 | Fixed type = stopwatch | Manual entries are not pomodoro sessions | ✓ Good — consistent with existing type system |
 | DurationPicker popover over numeric inputs | Better UX, consistent with EstimatePicker pattern | ✓ Good — implemented in quick-4 |
 | Filter task dropdown to active tasks only | Prevent logging to completed tasks | ✓ Good — implemented in quick-1 |
-
-## Current Milestone: v1.1 Day-scoped time in reports
-
-**Goal:** Fix the estimate indicator in Reports log items to show time tracked on the specific day, not all-time total.
-
-**Target features:**
-- Estimate indicator (sub-row under task title) shows day duration vs estimate instead of all-time total vs estimate
+| Indicator sub-row uses task.duration (day-scoped); color/icon use totalTracked (all-time) | Split makes display accurate for planning while completion status remains all-time | ✓ Good — v1.1 |
 
 ---
-*Last updated: 2026-03-11 after v1.1 milestone start*
+*Last updated: 2026-03-11 after v1.1 milestone*
