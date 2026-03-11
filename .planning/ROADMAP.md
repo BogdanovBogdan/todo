@@ -30,11 +30,14 @@ See full details: `.planning/milestones/v1.0-ROADMAP.md`
   2. When a task has logs on multiple days, each day's row shows only that day's tracked duration
   3. A task with zero duration logged on a given day shows 0 tracked (not a non-zero carry-forward)
   4. Percentage/bar progress reflects day-specific duration vs task estimate
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 02-01-PLAN.md — Fix estimate indicator sub-row to use day-scoped `task.duration`
 
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. Manual Log Entry | v1.0 | 2/2 | Complete | 2026-03-09 |
-| 2. Day-scoped Estimate Indicator | v1.1 | 0/? | Not started | - |
+| 2. Day-scoped Estimate Indicator | v1.1 | 0/1 | Not started | - |
