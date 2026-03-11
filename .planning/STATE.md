@@ -67,8 +67,14 @@ None yet.
 
 None.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 5 | При копировании задач из today в буфер должно также копироваться планируемое время | 2026-03-11 | 56278ef | [5-today](.planning/quick/5-today/) |
+
 ## Session Continuity
 
-Last session: 2026-03-11T11:39:34.938Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-11
+Stopped at: Completed quick task 5
 Resume file: None
