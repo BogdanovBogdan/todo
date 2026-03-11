@@ -3,8 +3,16 @@
 import { useState } from 'react';
 
 interface Props {
-  tasks: { title: string }[];
+  tasks: { title: string; estimatedDuration: number | null }[];
   todayStr: string;
+}
+
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const remainderMins = Math.round((seconds % 3600) / 60);
+  if (hours === 0) return `${Math.round(seconds / 60)}m`;
+  if (remainderMins === 0) return `${hours}h`;
+  return `${hours}h ${remainderMins}m`;
 }
 
 export function CopyTasksButton({ tasks, todayStr }: Props) {
@@ -17,7 +25,15 @@ export function CopyTasksButton({ tasks, todayStr }: Props) {
       month: 'long',
       year: 'numeric',
     }).format(new Date(y, m - 1, d, 12));
-    const text = [`📅 ${dateLabel}`, '', ...tasks.map((t) => `• ${t.title}`)].join('\n');
+    const text = [
+      `📅 ${dateLabel}`,
+      '',
+      ...tasks.map((t) =>
+        t.estimatedDuration
+          ? `• ${t.title} [${formatDuration(t.estimatedDuration)}]`
+          : `• ${t.title}`
+      ),
+    ].join('\n');
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
