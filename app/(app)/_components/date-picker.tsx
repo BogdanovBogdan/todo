@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
+import { Calendar } from "lucide-react"
 import { DayPicker } from "react-day-picker"
 import "react-day-picker/style.css"
 import { dateStrToLocal, localDateToStr } from "@/lib/utils/tz"
@@ -95,7 +96,7 @@ export function DatePicker({
             : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
         }`}
       >
-        <span>📅</span>
+        <Calendar size={12} />
         <span>{value ? formatDate(value) : placeholder}</span>
       </button>
 

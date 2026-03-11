@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2 } from "lucide-react"
+import { Trash2, Hourglass } from "lucide-react"
 import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
 import { TaskModal } from "./task-modal"
@@ -83,8 +83,9 @@ export function TaskItem({ taskId }: { taskId: string }) {
                 </span>
               )}
               {task.estimatedDuration && (
-                <span className="text-xs text-gray-400">
-                  ⏳ {formatEstimate(task.estimatedDuration)}
+                <span className="flex items-center gap-0.5 text-xs text-gray-400">
+                  <Hourglass size={10} />
+                  {formatEstimate(task.estimatedDuration)}
                 </span>
               )}
               {isTracking && (

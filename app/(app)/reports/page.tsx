@@ -5,6 +5,7 @@ import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
 import { and, asc, eq, gte, inArray, isNotNull, lt, lte, sql } from "drizzle-orm"
 import { cookies } from "next/headers"
 import Link from "next/link"
+import { CheckCircle2, XCircle } from "lucide-react"
 import { CopyDayButton } from "./_components/copy-day-button"
 import { EditableTaskDuration } from "./_components/editable-task-duration"
 import { DeleteTimeLogsButton } from "./_components/delete-time-logs-button"
@@ -399,9 +400,9 @@ export default async function ReportsPage({
                       <div key={taskId} className="group px-4 py-3">
                         {/* Title row */}
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-base leading-none flex-shrink-0">
-                            {isDone ? "✅" : "❌"}
-                          </span>
+                          {isDone
+                            ? <CheckCircle2 size={16} className="flex-shrink-0 text-green-500" />
+                            : <XCircle size={16} className="flex-shrink-0 text-red-400" />}
                           <TaskTitleButton taskId={taskId} taskTitle={task.taskTitle} />
                           {task.logIds.length > 0 ? (
                             <EditableTaskDuration

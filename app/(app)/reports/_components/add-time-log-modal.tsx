@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
+import { Hourglass } from "lucide-react"
 import { saveTimeLog } from "@/lib/actions/time-logs"
 import { DatePicker } from "@/app/(app)/_components/date-picker"
 import { dateStrToLocal } from "@/lib/utils/tz"
@@ -78,7 +79,7 @@ function DurationPicker({
             : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
         }`}
       >
-        <span>⏳</span>
+        <Hourglass size={12} />
         <span>{displayLabel}</span>
       </button>
 

@@ -5,6 +5,7 @@ import { getDayBoundsUTC, toLocalDateStr, formatInTz } from "@/lib/utils/tz"
 import { desc, eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 import Link from "next/link"
+import { Hourglass, Timer } from "lucide-react"
 import { EditableDuration } from "./_components/editable-duration"
 import { LogActions } from "./_components/log-actions"
 import { DeleteLogButton } from "./_components/delete-log-button"
@@ -128,9 +129,9 @@ export default async function TimerPage({
                   key={log.id}
                   className="group flex items-center gap-3 px-4 py-3 min-w-0"
                 >
-                  <span className="text-sm flex-shrink-0">
-                    {log.type === "pomodoro" ? "🍅" : "⏱"}
-                  </span>
+                  {log.type === "pomodoro"
+                    ? <Hourglass size={14} className="flex-shrink-0 text-red-400" />
+                    : <Timer size={14} className="flex-shrink-0 text-gray-400" />}
 
                   <TaskTitleButton taskId={log.taskId} taskTitle={log.taskTitle} />
 

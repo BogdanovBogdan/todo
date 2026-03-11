@@ -1,5 +1,6 @@
 "use client"
 
+import { Hourglass, Play } from "lucide-react"
 import { useTimer } from "../../_components/timer/timer-context"
 
 interface Props {
@@ -31,7 +32,7 @@ export function LogActions({ taskId, taskTitle }: Props) {
             : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
         }`}
       >
-        ▶
+        <Play size={12} />
       </button>
       <button
         onClick={() => start(taskId, taskTitle, "pomodoro")}
@@ -42,7 +43,7 @@ export function LogActions({ taskId, taskTitle }: Props) {
             : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"
         }`}
       >
-        🍅
+        <Hourglass size={12} />
       </button>
     </div>
   )

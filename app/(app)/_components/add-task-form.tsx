@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { Hourglass } from "lucide-react"
 import { createTask } from "@/lib/actions/tasks"
 import { useTaskStore } from "@/lib/stores/task-store"
 import { parseEstimate } from "@/lib/utils/time"
@@ -101,7 +102,7 @@ export function AddTaskForm({ defaultDate }: { defaultDate?: string | null }) {
         <DatePicker value={dueDate} onChange={setDueDate} />
 
         <div className="flex items-center gap-1 text-xs rounded-md px-2 py-1 border border-gray-200 text-gray-400 focus-within:border-gray-400 transition-colors">
-          <span>⏳</span>
+          <Hourglass size={12} />
           <input
             type="time"
             name="estimate"

@@ -1,6 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+import { Hourglass, Trash2 } from "lucide-react"
 import { getTaskTrackedTime } from "@/lib/actions/time-logs"
 import { useTaskStore } from "@/lib/stores/task-store"
 import { useTimer } from "./timer/timer-context"
@@ -67,7 +69,7 @@ function EstimatePicker({
             : "border-gray-200 text-gray-400 md:hover:bg-gray-50"
         }`}
       >
-        <span>⏳</span>
+        <Hourglass size={12} />
         {estimatedDuration ? (
           <span>{formatEstimate(estimatedDuration)}</span>
         ) : (
@@ -236,7 +238,7 @@ export function TaskModal({ taskId, onClose }: Props) {
       {/* Tracked time */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          ⏱ Tracking
+          Tracking
         </p>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm font-mono text-gray-700">
@@ -267,7 +269,7 @@ export function TaskModal({ taskId, onClose }: Props) {
       {/* Due date */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          📅 Due date
+          Due date
         </p>
         <div className={task.completed ? "pointer-events-none opacity-50" : ""}>
           <DatePicker value={task.dueDate} onChange={handleDateChange} />
@@ -277,7 +279,7 @@ export function TaskModal({ taskId, onClose }: Props) {
       {/* Estimate */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-          ⏳ Estimate
+          Estimate
         </p>
         <EstimatePicker
           taskId={task.id}
@@ -291,9 +293,10 @@ export function TaskModal({ taskId, onClose }: Props) {
         <button
           onClick={handleDelete}
           disabled={task.completed}
-          className="text-sm text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
+          aria-label="Delete task"
+          className="text-red-400 hover:text-red-600 transition-colors disabled:opacity-50 cursor-pointer"
         >
-          Delete task
+          <Trash2 size={16} />
         </button>
       </div>
     </div>
@@ -405,7 +408,7 @@ export function TaskModal({ taskId, onClose }: Props) {
     </div>
   )
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -457,6 +460,7 @@ export function TaskModal({ taskId, onClose }: Props) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }

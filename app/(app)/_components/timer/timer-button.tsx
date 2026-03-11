@@ -1,5 +1,6 @@
 "use client"
 
+import { Hourglass, Play } from "lucide-react"
 import { TimerType, useTimer } from "./timer-context"
 
 interface Props {
@@ -33,7 +34,7 @@ export function TimerButton({ taskId, taskTitle, type, alwaysVisible = false, di
           : "opacity-0 group-hover:opacity-100 text-gray-400 md:hover:text-red-400 md:hover:bg-red-50 cursor-pointer"
       }`}
     >
-      {type === "pomodoro" ? "🍅" : "▶"}
+      {type === "pomodoro" ? <Hourglass size={14} /> : <Play size={14} />}
     </button>
   )
 }

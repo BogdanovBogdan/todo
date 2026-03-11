@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { Hourglass, Timer, Pause, Play, Square } from "lucide-react"
 import { formatSeconds, useTimer } from "./timer-context"
 import { TaskModal } from "../task-modal"
 import { fetchTask } from "@/lib/actions/tasks"
@@ -62,7 +63,7 @@ export function TimerBar() {
       <div className="flex items-center justify-between px-3 md:px-6 h-14 max-w-5xl mx-auto w-full">
         {/* Task info */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <span className="text-base">{isPomodoro ? "🍅" : "⏱"}</span>
+          {isPomodoro ? <Hourglass size={16} className="flex-shrink-0 text-red-500" /> : <Timer size={16} className="flex-shrink-0 text-gray-400" />}
           <button
             onClick={async () => {
               if (state.taskId && !useTaskStore.getState().tasks.find((t) => t.id === state.taskId)) {
@@ -109,24 +110,24 @@ export function TimerBar() {
             <button
               onClick={() => setType("pomodoro")}
               disabled={isRunning}
-              className={`px-2.5 py-1.5 transition-colors disabled:cursor-not-allowed ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 transition-colors disabled:cursor-not-allowed ${
                 isPomodoro
                   ? "bg-red-500 text-white"
                   : "text-gray-500 hover:bg-gray-50 disabled:opacity-50"
               }`}
             >
-              🍅 25m
+              <Hourglass size={11} /> 25m
             </button>
             <button
               onClick={() => setType("stopwatch")}
               disabled={isRunning}
-              className={`px-2.5 py-1.5 border-l border-gray-200 transition-colors disabled:cursor-not-allowed ${
+              className={`flex items-center gap-1 px-2.5 py-1.5 border-l border-gray-200 transition-colors disabled:cursor-not-allowed ${
                 !isPomodoro
                   ? "bg-gray-800 text-white"
                   : "text-gray-500 hover:bg-gray-50 disabled:opacity-50"
               }`}
             >
-              ⏱ Free
+              <Timer size={11} /> Free
             </button>
           </div>
 
@@ -136,7 +137,7 @@ export function TimerBar() {
             className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
             aria-label={isRunning ? "Pause" : "Resume"}
           >
-            {isRunning ? "⏸" : "▶"}
+            {isRunning ? <Pause size={16} /> : <Play size={16} />}
           </button>
 
           {/* Stop & save */}
@@ -145,7 +146,7 @@ export function TimerBar() {
             className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors"
             aria-label="Stop and save"
           >
-            ⏹
+            <Square size={14} />
           </button>
         </div>
       </div>
