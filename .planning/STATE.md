@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: Manual time log entry
-status: between_milestones
+milestone: v1.1
+milestone_name: Day-scoped time in reports
+status: defining_requirements
 stopped_at: null
 last_updated: "2026-03-11"
-last_activity: "2026-03-11 — Completed and archived v1.0 milestone"
+last_activity: "2026-03-11 — Milestone v1.1 started"
 progress:
-  total_phases: 1
-  completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,12 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Every minute of work is tracked and visible — tasks drive focus, time logs prove effort.
-**Current focus:** Planning next milestone
+**Current focus:** Defining requirements for v1.1
 
 ## Current Position
 
-Milestone v1.0 archived. Ready for next milestone.
-Last activity: 2026-03-11 — Archived v1.0 milestone (Manual time log entry)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-11 — Milestone v1.1 started
 
 Progress: [████████████████████] 100% (milestone complete)
 

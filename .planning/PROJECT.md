@@ -27,7 +27,9 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 
 ### Active
 
-<!-- Next milestone scope — define with /gsd:new-milestone -->
+<!-- v1.1 scope -->
+
+- [ ] Estimate indicator in Reports log item shows day-specific tracked time, not all-time total
 
 ### Out of Scope
 
@@ -60,5 +62,12 @@ Every minute of work is tracked and visible — tasks drive focus, time logs pro
 | DurationPicker popover over numeric inputs | Better UX, consistent with EstimatePicker pattern | ✓ Good — implemented in quick-4 |
 | Filter task dropdown to active tasks only | Prevent logging to completed tasks | ✓ Good — implemented in quick-1 |
 
+## Current Milestone: v1.1 Day-scoped time in reports
+
+**Goal:** Fix the estimate indicator in Reports log items to show time tracked on the specific day, not all-time total.
+
+**Target features:**
+- Estimate indicator (sub-row under task title) shows day duration vs estimate instead of all-time total vs estimate
+
 ---
-*Last updated: 2026-03-11 after v1.0 milestone*
+*Last updated: 2026-03-11 after v1.1 milestone start*
