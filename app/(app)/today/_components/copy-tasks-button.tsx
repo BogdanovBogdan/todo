@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 interface Props {
-  tasks: { title: string; estimatedDuration: number | null }[];
+  tasks: { title: string; estimatedDuration: number | null; completed: boolean }[];
   todayStr: string;
 }
 
@@ -19,21 +19,17 @@ export function CopyTasksButton({ tasks, todayStr }: Props) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
-    const [y, m, d] = todayStr.split('-').map(Number);
-    const dateLabel = new Intl.DateTimeFormat('en-US', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date(y, m - 1, d, 12));
-    const text = [
-      `📅 ${dateLabel}`,
-      '',
-      ...tasks.map((t) =>
-        t.estimatedDuration
-          ? `• ${t.title} [${formatDuration(t.estimatedDuration)}]`
-          : `• ${t.title}`
-      ),
-    ].join('\n');
+    const [, mm, dd] = todayStr.split('-');
+    const dateFormatted = `${dd}.${mm}`;
+    const lines: string[] = [`📅 ${dateFormatted}`, ''];
+    for (const t of tasks) {
+      const status = t.completed ? '✅' : '❌';
+      const estimatePart = t.estimatedDuration
+        ? ` [est: ${formatDuration(t.estimatedDuration)}]`
+        : '';
+      lines.push(`• ${t.title}${estimatePart} ${status}`);
+    }
+    const text = lines.join('\n');
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
