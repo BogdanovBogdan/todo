@@ -72,9 +72,10 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 5 | При копировании задач из today в буфер должно также копироваться планируемое время | 2026-03-11 | 56278ef | [5-today](.planning/quick/5-today/) |
+| 6 | Align today copy format with reports style (dd.mm, completion emoji, est: label) | 2026-03-11 | 12fec8a | [6-today-reports](.planning/quick/6-today-reports/) |
 
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed quick task 5
+Stopped at: Completed quick task 6
 Resume file: None
