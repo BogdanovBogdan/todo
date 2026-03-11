@@ -7,7 +7,7 @@
 
 ### Reports
 
-- [ ] **REP-01**: Индикатор прогресса в log item показывает время, затреканное за конкретный день (не общее всё-время) относительно estimate задачи
+- [x] **REP-01**: Индикатор прогресса в log item показывает время, затреканное за конкретный день (не общее всё-время) относительно estimate задачи
 
 ## Future Requirements
 
@@ -23,7 +23,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| REP-01 | Phase 2 | Pending |
+| REP-01 | Phase 2 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 1 total
